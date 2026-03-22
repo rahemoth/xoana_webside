@@ -45,7 +45,7 @@ export function Navbar() {
     setLocaleCookie(next);
   };
 
-  const count = cartCount();
+  const count = mounted ? cartCount() : 0;
 
   const navLinks = [
     { href: '/', label: t('home') },

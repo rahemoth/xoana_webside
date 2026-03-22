@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useAnimationFrame, useMotionTemplate, useMotionValue, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ShimmerButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -137,37 +137,45 @@ export function AnimatedGradientText({
 }
 
 export function Particles({
-  className,
-  quantity = 50,
-}: {
+                            className,
+                            quantity = 50,
+                          }: {
   className?: string;
   quantity?: number;
 }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // ✅ 避免 SSR/CSR 随机数不一致导致 hydration mismatch
+  if (!mounted) return null;
+
   return (
-    <div className={cn('absolute inset-0 overflow-hidden', className)}>
-      {Array.from({ length: quantity }).map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute h-1 w-1 rounded-full bg-white/20"
-          initial={{
-            x: Math.random() * 100 + '%',
-            y: Math.random() * 100 + '%',
-            opacity: Math.random() * 0.5 + 0.2,
-            scale: Math.random() * 0.5 + 0.5,
-          }}
-          animate={{
-            y: [null, '-10%'],
-            opacity: [null, 0],
-          }}
-          transition={{
-            duration: Math.random() * 3 + 2,
-            repeat: Infinity,
-            repeatType: 'loop',
-            delay: Math.random() * 5,
-          }}
-        />
-      ))}
-    </div>
+      <div className={cn('absolute inset-0 overflow-hidden', className)}>
+        {Array.from({ length: quantity }).map((_, i) => (
+            <motion.div
+                key={i}
+                className="absolute h-1 w-1 rounded-full bg-white/20"
+                initial={{
+                  x: Math.random() * 100 + '%',
+                  y: Math.random() * 100 + '%',
+                  opacity: Math.random() * 0.5 + 0.2,
+                }}
+                animate={{
+                  y: [null, Math.random() * 100 + '%'],
+                  x: [null, Math.random() * 100 + '%'],
+                  opacity: [Math.random() * 0.5 + 0.2, Math.random() * 0.5 + 0.2],
+                }}
+                transition={{
+                  duration: Math.random() * 10 + 10,
+                  repeat: Infinity,
+                  repeatType: 'reverse',
+                }}
+            />
+        ))}
+      </div>
   );
 }
 

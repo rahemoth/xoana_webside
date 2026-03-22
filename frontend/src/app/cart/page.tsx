@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import { useStore } from '@/store';
-import { Navbar, Footer } from '@/components/layout/Navbar';
 import Link from 'next/link';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,7 +13,7 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
-      <Navbar />
+
       <main className="mx-auto max-w-4xl px-4 pt-24 pb-16 sm:px-6 lg:px-8">
         <h1 className="mb-8 text-3xl font-bold text-zinc-900 dark:text-white">{t('title')}</h1>
 
@@ -109,7 +108,7 @@ export default function CartPage() {
           </div>
         )}
       </main>
-      <Footer />
+
     </div>
   );
 }
