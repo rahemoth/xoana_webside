@@ -65,13 +65,13 @@ export default function CheckoutPage() {
             <p className="mt-1 text-sm text-zinc-400">支付方式：{paymentMethod} · 测试模式</p>
             <div className="mt-8 flex justify-center gap-4">
               <button
-                onClick={() => router.push('/')
+                onClick={() => router.push('/')}
                 className="rounded-2xl border-2 border-zinc-900 px-6 py-3 font-semibold text-zinc-900 hover:bg-zinc-50 dark:border-white dark:text-white"
               >
                 返回首页
               </button>
               <button
-                onClick={() => router.push('/profile')
+                onClick={() => router.push('/profile')}
                 className="rounded-2xl bg-zinc-900 px-6 py-3 font-semibold text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900"
               >
                 查看订单

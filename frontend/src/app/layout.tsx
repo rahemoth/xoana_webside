@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { Providers } from "@/components/ui/providers";
 import { Navbar, Footer } from "@/components/layout/Navbar";
+import LayoutShell from '@/components/layout/LayoutShell';
 
 export const metadata: Metadata = {
     title: "XOANA - 独立手指滑板品牌",
@@ -31,9 +32,9 @@ export default async function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <NextIntlClientProvider messages={messages}>
                 <Providers>
-                    <Navbar />
-                    <main className="flex-1">{children}</main>
-                    <Footer />
+                    <LayoutShell>
+                        <main className="flex-1">{children}</main>
+                    </LayoutShell>
                 </Providers>
             </NextIntlClientProvider>
         </ThemeProvider>
