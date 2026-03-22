@@ -9,6 +9,8 @@ import { useStore } from '@/store';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+// import { RippleButton } from '@/components/magic/ripple-button';
+import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler';
 
 function getCurrentLocale(): string {
   if (typeof document === 'undefined') return 'zh';
@@ -94,13 +96,17 @@ export function Navbar() {
               {mounted ? (currentLocale === 'zh' ? 'EN' : '中文') : 'EN'}
             </button>
 
-            {/* Theme toggle */}
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="rounded-full p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-            >
-              {mounted && theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
+
+            {/*/!* Theme toggle *!/*/}
+            {/*<RippleButton*/}
+            {/*    type="button"*/}
+            {/*    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}*/}
+            {/*    className="rounded-full p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"*/}
+            {/*    aria-label="Toggle theme"*/}
+            {/*>*/}
+            {/*  {mounted && theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}*/}
+            {/*</RippleButton>*/}
+            <AnimatedThemeToggler mounted={mounted} />
 
             {/* Cart */}
             <Link
