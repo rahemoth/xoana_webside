@@ -1,0 +1,106 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+import { motion } from 'framer-motion';
+import { NumberTicker } from '@/components/magic';
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+
+export function BrandSection() {
+  const t = useTranslations('home.brand');
+  const [brandImage, setBrandImage] = useState<string>('');
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('xoana_site_settings');
+      if (saved) {
+        const s = JSON.parse(saved);
+        setBrandImage(s.brandImage || '');
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const stats = [
+    { value: 100, label: t('stat1Label'), suffix: '+' },
+    { value: 10000, label: t('stat2Label'), suffix: '+' },
+    { value: 5, label: t('stat3Label'), suffix: '+' },
+  ];
+
+  return (
+    <section id="brand" className="bg-zinc-950 py-24 text-white">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-violet-400">
+              Brand Story
+            </p>
+            <h2 className="mb-6 text-5xl font-bold">
+              {t('title')}
+            </h2>
+            <p className="text-lg leading-relaxed text-zinc-400">
+              {t('description')}
+            </p>
+
+            <div className="mt-12 grid grid-cols-3 gap-8">
+              {stats.map((stat, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <div className="text-4xl font-bold text-white">
+                    <NumberTicker value={stat.value} className="text-white" />
+                    {stat.suffix}
+                  </div>
+                  <p className="mt-1 text-sm text-zinc-500">{stat.label}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="relative"
+          >
+            {/* Brand visual */}
+            <div className="relative aspect-square overflow-hidden rounded-3xl">
+              {brandImage ? (
+                <Image
+                  src={brandImage}
+                  alt="About XOANA"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              ) : (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-600 to-blue-700" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-[120px] font-black text-white/10">X</span>
+                    <div className="absolute bottom-8 left-8 right-8">
+                      <p className="text-2xl font-bold text-white">XOANA</p>
+                      <p className="text-sm text-white/60">Independent Fingerboard Brand</p>
+                    </div>
+                  </div>
+                  {/* Decorative circles */}
+                  <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full border border-white/10" />
+                  <div className="absolute -bottom-4 -left-4 h-24 w-24 rounded-full border border-white/10" />
+                </>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}

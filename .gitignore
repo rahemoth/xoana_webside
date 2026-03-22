@@ -1,0 +1,17 @@
+# Backend
+backend/target/
+backend/.mvn/
+backend/*.iml
+backend/.idea/
+
+# Frontend (these are in frontend/.gitignore but listing here for root)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+
+# General
+.DS_Store
+*.pem
+*.log
+uploads/

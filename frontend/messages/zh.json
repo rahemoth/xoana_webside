@@ -1,0 +1,192 @@
+{
+  "nav": {
+    "home": "首页",
+    "products": "全部产品",
+    "articles": "文章",
+    "cart": "购物车",
+    "profile": "个人中心",
+    "login": "登录",
+    "register": "注册",
+    "logout": "退出登录",
+    "admin": "管理后台"
+  },
+  "home": {
+    "hero": {
+      "title": "XOANA 指板",
+      "subtitle": "极致工艺，专注品质",
+      "description": "每一块指板都是独立手工打造，融合传统技艺与现代设计",
+      "shopNow": "立即选购",
+      "learnMore": "了解更多"
+    },
+    "featured": {
+      "title": "推荐产品",
+      "subtitle": "精选优质指板，满足您的需求",
+      "viewAll": "查看全部"
+    },
+    "articles": {
+      "title": "最新文章",
+      "subtitle": "探索指板文化，分享技巧与故事",
+      "readMore": "阅读更多",
+      "viewAll": "查看全部"
+    },
+    "brand": {
+      "title": "关于 XOANA",
+      "description": "XOANA 是一个专注于独立手指滑板的品牌，我们致力于为每一位玩家带来最高品质的产品体验。每一块指板都经过精心设计与手工打造，融合了传统滑板文化与现代工艺美学。",
+      "stat1": "100+",
+      "stat1Label": "款式设计",
+      "stat2": "10000+",
+      "stat2Label": "满意客户",
+      "stat3": "5+",
+      "stat3Label": "年品牌历史"
+    },
+    "gallery": {
+      "title": "产品展示"
+    },
+    "contact": {
+      "title": "联系我们",
+      "subtitle": "有任何问题或合作意向，欢迎与我们联系",
+      "email": "邮箱",
+      "phone": "电话",
+      "address": "地址",
+      "emailPlaceholder": "您的邮箱",
+      "messagePlaceholder": "您的留言",
+      "namePlaceholder": "您的姓名",
+      "send": "发送消息",
+      "sending": "发送中...",
+      "success": "消息已发送！我们将尽快与您联系。"
+    }
+  },
+  "products": {
+    "title": "全部产品",
+    "subtitle": "探索我们的完整产品系列",
+    "search": "搜索产品...",
+    "filter": {
+      "all": "全部",
+      "category": "分类"
+    },
+    "addToCart": "加入购物车",
+    "buyNow": "立即购买",
+    "outOfStock": "暂无库存",
+    "price": "价格",
+    "material": "材质",
+    "dimensions": "尺寸",
+    "description": "产品描述",
+    "reviews": "评价",
+    "related": "相关产品",
+    "quantity": "数量",
+    "inStock": "有货",
+    "noProducts": "暂无产品",
+    "loading": "加载中..."
+  },
+  "articles": {
+    "title": "文章",
+    "subtitle": "探索指板文化，技巧分享与品牌故事",
+    "readMore": "阅读更多",
+    "publishedAt": "发布于",
+    "views": "阅读量",
+    "noArticles": "暂无文章"
+  },
+  "cart": {
+    "title": "购物车",
+    "empty": "购物车是空的",
+    "continueShopping": "继续购物",
+    "remove": "删除",
+    "quantity": "数量",
+    "subtotal": "小计",
+    "total": "合计",
+    "checkout": "去结算",
+    "itemCount": "件商品"
+  },
+  "checkout": {
+    "title": "结算",
+    "contactInfo": "联系信息",
+    "shippingAddress": "收货地址",
+    "paymentMethod": "支付方式",
+    "orderSummary": "订单摘要",
+    "placeOrder": "提交订单",
+    "name": "姓名",
+    "phone": "手机号",
+    "address": "详细地址",
+    "wechat": "微信支付",
+    "alipay": "支付宝",
+    "paypal": "PayPal",
+    "success": "订单创建成功！",
+    "processing": "处理中..."
+  },
+  "auth": {
+    "login": "登录",
+    "register": "注册",
+    "username": "用户名",
+    "email": "邮箱",
+    "password": "密码",
+    "confirmPassword": "确认密码",
+    "nickname": "昵称（可选）",
+    "loginBtn": "登录",
+    "registerBtn": "注册",
+    "noAccount": "还没有账号？",
+    "hasAccount": "已有账号？",
+    "loginHere": "立即登录",
+    "registerHere": "立即注册",
+    "forgotPassword": "忘记密码？"
+  },
+  "profile": {
+    "title": "个人中心",
+    "orders": "我的订单",
+    "settings": "个人设置",
+    "nickname": "昵称",
+    "email": "邮箱",
+    "phone": "手机号",
+    "address": "默认地址",
+    "save": "保存",
+    "orderStatus": {
+      "PENDING": "待支付",
+      "PAID": "已支付",
+      "SHIPPED": "已发货",
+      "DELIVERED": "已签收",
+      "CANCELLED": "已取消",
+      "REFUNDED": "已退款"
+    }
+  },
+  "admin": {
+    "dashboard": "仪表盘",
+    "users": "用户管理",
+    "orders": "订单管理",
+    "products": "产品管理",
+    "articles": "文章管理",
+    "traffic": "流量统计",
+    "settings": "内容设置",
+    "totalUsers": "总用户数",
+    "totalOrders": "总订单数",
+    "totalVisits": "总访问量",
+    "recentOrders": "最近订单",
+    "addProduct": "添加产品",
+    "addArticle": "添加文章",
+    "publish": "发布",
+    "unpublish": "取消发布",
+    "edit": "编辑",
+    "delete": "删除",
+    "save": "保存",
+    "cancel": "取消",
+    "confirm": "确认",
+    "active": "启用",
+    "inactive": "禁用"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "出错了",
+    "retry": "重试",
+    "back": "返回",
+    "next": "下一页",
+    "prev": "上一页",
+    "search": "搜索",
+    "submit": "提交",
+    "cancel": "取消",
+    "confirm": "确认",
+    "success": "成功",
+    "darkMode": "深色模式",
+    "lightMode": "浅色模式",
+    "language": "语言",
+    "chinese": "中文",
+    "english": "English"
+  }
+}
