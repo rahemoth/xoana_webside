@@ -2,17 +2,46 @@
 
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
-const galleryItems = [
-  { id: 1, color: 'from-violet-500 to-purple-700', size: 'col-span-2 row-span-2' },
-  { id: 2, color: 'from-blue-500 to-cyan-600', size: 'col-span-1 row-span-1' },
-  { id: 3, color: 'from-rose-500 to-pink-600', size: 'col-span-1 row-span-1' },
-  { id: 4, color: 'from-amber-500 to-orange-600', size: 'col-span-1 row-span-1' },
-  { id: 5, color: 'from-emerald-500 to-teal-600', size: 'col-span-2 row-span-1' },
+const FALLBACK_COLORS = [
+  'from-violet-500 to-purple-700',
+  'from-blue-500 to-cyan-600',
+  'from-rose-500 to-pink-600',
+  'from-amber-500 to-orange-600',
+  'from-emerald-500 to-teal-600',
+];
+
+const SIZES = [
+  'col-span-2 row-span-2',
+  'col-span-1 row-span-1',
+  'col-span-1 row-span-1',
+  'col-span-1 row-span-1',
+  'col-span-2 row-span-1',
 ];
 
 export function GallerySection() {
   const t = useTranslations('home.gallery');
+  const [galleryImages, setGalleryImages] = useState<string[]>(Array(5).fill(''));
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('xoana_site_settings');
+      if (saved) {
+        const s = JSON.parse(saved);
+        setGalleryImages([
+          s.galleryImage1 || '',
+          s.galleryImage2 || '',
+          s.galleryImage3 || '',
+          s.galleryImage4 || '',
+          s.galleryImage5 || '',
+        ]);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   return (
     <section className="bg-white py-24 dark:bg-zinc-950">
@@ -32,19 +61,29 @@ export function GallerySection() {
         </motion.div>
 
         <div className="grid auto-rows-[200px] grid-cols-3 gap-4">
-          {galleryItems.map((item, i) => (
+          {SIZES.map((size, i) => (
             <motion.div
-              key={item.id}
+              key={i}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
               whileHover={{ scale: 1.02 }}
-              className={`overflow-hidden rounded-2xl bg-gradient-to-br ${item.color} ${item.size} cursor-pointer`}
+              className={`relative overflow-hidden rounded-2xl ${size} cursor-pointer`}
             >
-              <div className="flex h-full w-full items-center justify-center">
-                <span className="text-6xl font-black text-white/20">X</span>
-              </div>
+              {galleryImages[i] ? (
+                <Image
+                  src={galleryImages[i]}
+                  alt={`Gallery ${i + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+              ) : (
+                <div className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${FALLBACK_COLORS[i]}`}>
+                  <span className="text-6xl font-black text-white/20">X</span>
+                </div>
+              )}
             </motion.div>
           ))}
         </div>

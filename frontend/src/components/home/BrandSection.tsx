@@ -3,9 +3,24 @@
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { NumberTicker } from '@/components/magic';
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 export function BrandSection() {
   const t = useTranslations('home.brand');
+  const [brandImage, setBrandImage] = useState<string>('');
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('xoana_site_settings');
+      if (saved) {
+        const s = JSON.parse(saved);
+        setBrandImage(s.brandImage || '');
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const stats = [
     { value: 100, label: t('stat1Label'), suffix: '+' },
@@ -59,17 +74,29 @@ export function BrandSection() {
           >
             {/* Brand visual */}
             <div className="relative aspect-square overflow-hidden rounded-3xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-600 to-blue-700" />
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[120px] font-black text-white/10">X</span>
-                <div className="absolute bottom-8 left-8 right-8">
-                  <p className="text-2xl font-bold text-white">XOANA</p>
-                  <p className="text-sm text-white/60">Independent Fingerboard Brand</p>
-                </div>
-              </div>
-              {/* Decorative circles */}
-              <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full border border-white/10" />
-              <div className="absolute -bottom-4 -left-4 h-24 w-24 rounded-full border border-white/10" />
+              {brandImage ? (
+                <Image
+                  src={brandImage}
+                  alt="About XOANA"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              ) : (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-600 to-blue-700" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-[120px] font-black text-white/10">X</span>
+                    <div className="absolute bottom-8 left-8 right-8">
+                      <p className="text-2xl font-bold text-white">XOANA</p>
+                      <p className="text-sm text-white/60">Independent Fingerboard Brand</p>
+                    </div>
+                  </div>
+                  {/* Decorative circles */}
+                  <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full border border-white/10" />
+                  <div className="absolute -bottom-4 -left-4 h-24 w-24 rounded-full border border-white/10" />
+                </>
+              )}
             </div>
           </motion.div>
         </div>

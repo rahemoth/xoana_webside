@@ -3,12 +3,18 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
-import { ShoppingCart, Sun, Moon, User, Menu, X, Globe } from 'lucide-react';
+import { ShoppingCart, Sun, Moon, User, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useStore } from '@/store';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+
+function getCurrentLocale(): string {
+  if (typeof document === 'undefined') return 'zh';
+  const match = document.cookie.match(/(?:^|;\s*)locale=([^;]+)/);
+  return match ? match[1] : 'zh';
+}
 
 function setLocaleCookie(locale: string) {
   document.cookie = `locale=${locale}; path=/; max-age=31536000`;
@@ -17,20 +23,27 @@ function setLocaleCookie(locale: string) {
 
 export function Navbar() {
   const t = useTranslations('nav');
-  const tc = useTranslations('common');
   const { theme, setTheme } = useTheme();
   const { user, clearAuth, cartCount } = useStore();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [currentLocale, setCurrentLocale] = useState<string>('zh');
 
   useEffect(() => {
     setMounted(true);
+    setCurrentLocale(getCurrentLocale());
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const toggleLocale = () => {
+    const next = currentLocale === 'zh' ? 'en' : 'zh';
+    setCurrentLocale(next);
+    setLocaleCookie(next);
+  };
 
   const count = cartCount();
 
@@ -50,7 +63,7 @@ export function Navbar() {
       )}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="relative flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
@@ -58,8 +71,8 @@ export function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden items-center space-x-8 md:flex">
+          {/* Desktop Nav — absolutely centred */}
+          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center space-x-8 md:flex">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -73,18 +86,13 @@ export function Navbar() {
 
           {/* Actions */}
           <div className="flex items-center space-x-2">
-            {/* Language toggle */}
-            <div className="relative hidden md:block">
-              <select
-                className="appearance-none rounded-md border-0 bg-transparent py-1 pl-2 pr-6 text-sm text-zinc-600 focus:outline-none dark:text-zinc-400"
-                onChange={(e) => setLocaleCookie(e.target.value)}
-                defaultValue={mounted ? (document.cookie.includes('locale=en') ? 'en' : 'zh') : 'zh'}
-              >
-                <option value="zh">中文</option>
-                <option value="en">EN</option>
-              </select>
-              <Globe className="pointer-events-none absolute right-1 top-1.5 h-4 w-4 text-zinc-400" />
-            </div>
+            {/* Language toggle — click to switch ZH ↔ EN */}
+            <button
+              onClick={toggleLocale}
+              className="hidden rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 md:flex items-center"
+            >
+              {mounted ? (currentLocale === 'zh' ? 'EN' : '中文') : 'EN'}
+            </button>
 
             {/* Theme toggle */}
             <button
