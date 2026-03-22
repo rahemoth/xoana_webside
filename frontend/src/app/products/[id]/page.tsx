@@ -61,8 +61,7 @@ export default function ProductDetailPage() {
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 lg:px-8">
         <button onClick={() => router.back()} className="mb-8 flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
-          <ArrowLeft className="h-4 w-4" />
-          {t('loading') ? '返回' : '返回'}
+          <ArrowLeft className="h-4 w-4" /> 返回
         </button>
 
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">

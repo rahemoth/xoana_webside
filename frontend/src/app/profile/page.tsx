@@ -49,7 +49,9 @@ export default function ProfilePage() {
       const res = await userApi.updateProfile(form);
       if (res.data?.data) {
         const updated = res.data.data;
-        setAuth({ ...user, nickname: updated.nickname, phone: updated.phone, address: updated.address }, localStorage.getItem('xoana_token') || '');
+        const storeData = localStorage.getItem('xoana-store');
+        const token = storeData ? JSON.parse(storeData)?.state?.token || '' : '';
+        setAuth({ ...user, nickname: updated.nickname, phone: updated.phone, address: updated.address }, token);
       }
     } catch {}
     setSaving(false);

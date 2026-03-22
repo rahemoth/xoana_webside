@@ -9,10 +9,15 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('xoana_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // Read token from Zustand persisted storage
+    try {
+      const storeData = localStorage.getItem('xoana-store');
+      if (storeData) {
+        const parsed = JSON.parse(storeData);
+        const token = parsed?.state?.token;
+        if (token) config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch {}
   }
   return config;
 });

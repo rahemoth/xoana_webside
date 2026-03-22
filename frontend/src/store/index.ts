@@ -45,17 +45,9 @@ export const useStore = create<AppState>()(
       user: null,
       token: null,
       setAuth: (user, token) => {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('xoana_token', token);
-          localStorage.setItem('xoana_user', JSON.stringify(user));
-        }
         set({ user, token });
       },
       clearAuth: () => {
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('xoana_token');
-          localStorage.removeItem('xoana_user');
-        }
         set({ user: null, token: null });
       },
 
