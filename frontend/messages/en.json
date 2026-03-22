@@ -1,0 +1,192 @@
+{
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "articles": "Articles",
+    "cart": "Cart",
+    "profile": "Profile",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "admin": "Admin Panel"
+  },
+  "home": {
+    "hero": {
+      "title": "XOANA Fingerboard",
+      "subtitle": "Ultimate Craft, Pure Quality",
+      "description": "Every fingerboard is uniquely handcrafted, blending traditional techniques with modern design",
+      "shopNow": "Shop Now",
+      "learnMore": "Learn More"
+    },
+    "featured": {
+      "title": "Featured Products",
+      "subtitle": "Handpicked quality fingerboards for your needs",
+      "viewAll": "View All"
+    },
+    "articles": {
+      "title": "Latest Articles",
+      "subtitle": "Explore fingerboard culture, tips and stories",
+      "readMore": "Read More",
+      "viewAll": "View All"
+    },
+    "brand": {
+      "title": "About XOANA",
+      "description": "XOANA is a brand focused on independent fingerboards. We are committed to delivering the highest quality products to every player. Each fingerboard is carefully designed and handcrafted, blending traditional skateboard culture with modern craftsmanship.",
+      "stat1": "100+",
+      "stat1Label": "Designs",
+      "stat2": "10000+",
+      "stat2Label": "Happy Customers",
+      "stat3": "5+",
+      "stat3Label": "Years of Heritage"
+    },
+    "gallery": {
+      "title": "Gallery"
+    },
+    "contact": {
+      "title": "Contact Us",
+      "subtitle": "For any questions or partnership inquiries, feel free to reach out",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "emailPlaceholder": "Your email",
+      "messagePlaceholder": "Your message",
+      "namePlaceholder": "Your name",
+      "send": "Send Message",
+      "sending": "Sending...",
+      "success": "Message sent! We'll get back to you soon."
+    }
+  },
+  "products": {
+    "title": "All Products",
+    "subtitle": "Explore our complete product range",
+    "search": "Search products...",
+    "filter": {
+      "all": "All",
+      "category": "Category"
+    },
+    "addToCart": "Add to Cart",
+    "buyNow": "Buy Now",
+    "outOfStock": "Out of Stock",
+    "price": "Price",
+    "material": "Material",
+    "dimensions": "Dimensions",
+    "description": "Description",
+    "reviews": "Reviews",
+    "related": "Related Products",
+    "quantity": "Quantity",
+    "inStock": "In Stock",
+    "noProducts": "No products found",
+    "loading": "Loading..."
+  },
+  "articles": {
+    "title": "Articles",
+    "subtitle": "Explore fingerboard culture, tips and brand stories",
+    "readMore": "Read More",
+    "publishedAt": "Published",
+    "views": "Views",
+    "noArticles": "No articles yet"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "continueShopping": "Continue Shopping",
+    "remove": "Remove",
+    "quantity": "Quantity",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "checkout": "Checkout",
+    "itemCount": "items"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "contactInfo": "Contact Information",
+    "shippingAddress": "Shipping Address",
+    "paymentMethod": "Payment Method",
+    "orderSummary": "Order Summary",
+    "placeOrder": "Place Order",
+    "name": "Name",
+    "phone": "Phone",
+    "address": "Address",
+    "wechat": "WeChat Pay",
+    "alipay": "Alipay",
+    "paypal": "PayPal",
+    "success": "Order created successfully!",
+    "processing": "Processing..."
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "nickname": "Nickname (optional)",
+    "loginBtn": "Login",
+    "registerBtn": "Register",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "loginHere": "Login here",
+    "registerHere": "Register here",
+    "forgotPassword": "Forgot password?"
+  },
+  "profile": {
+    "title": "My Profile",
+    "orders": "My Orders",
+    "settings": "Settings",
+    "nickname": "Nickname",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Default Address",
+    "save": "Save",
+    "orderStatus": {
+      "PENDING": "Pending",
+      "PAID": "Paid",
+      "SHIPPED": "Shipped",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled",
+      "REFUNDED": "Refunded"
+    }
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "users": "User Management",
+    "orders": "Order Management",
+    "products": "Product Management",
+    "articles": "Article Management",
+    "traffic": "Traffic Analytics",
+    "settings": "Content Settings",
+    "totalUsers": "Total Users",
+    "totalOrders": "Total Orders",
+    "totalVisits": "Total Visits",
+    "recentOrders": "Recent Orders",
+    "addProduct": "Add Product",
+    "addArticle": "Add Article",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "back": "Back",
+    "next": "Next",
+    "prev": "Previous",
+    "search": "Search",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "success": "Success",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "language": "Language",
+    "chinese": "中文",
+    "english": "English"
+  }
+}
