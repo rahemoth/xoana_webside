@@ -4,9 +4,8 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { productApi } from '@/lib/api';
-import { Navbar, Footer } from '@/components/layout/Navbar';
 import Link from 'next/link';
-import { Search, ShoppingCart, Filter } from 'lucide-react';
+import { Search, ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store';
 import { formatPrice } from '@/lib/utils';
@@ -44,24 +43,27 @@ export default function ProductsPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['products', page, category, search],
-    queryFn: () => productApi.getAll({
-      page,
-      size: 12,
-      category: category !== '全部' ? category : undefined,
-      keyword: search || undefined,
-    }),
+    queryFn: () =>
+      productApi.getAll({
+        page,
+        size: 12,
+        category: category !== '全部' ? category : undefined,
+        keyword: search || undefined,
+      }),
   });
 
   const serverProducts: Product[] = data?.data?.data?.content || [];
-  const products = serverProducts.length > 0 ? serverProducts : MOCK_PRODUCTS.filter(p => {
-    const matchCat = category === '全部' || p.category === category;
-    const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
-  });
+  const products =
+    serverProducts.length > 0
+      ? serverProducts
+      : MOCK_PRODUCTS.filter((p) => {
+          const matchCat = category === '全部' || p.category === category;
+          const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
+          return matchCat && matchSearch;
+        });
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950">
-      <Navbar />
+    <div className="bg-white dark:bg-zinc-950">
       <main className="mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-10 text-center">
@@ -102,7 +104,7 @@ export default function ProductsPage() {
         {isLoading ? (
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800 h-72" />
+              <div key={i} className="h-72 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800" />
             ))}
           </div>
         ) : products.length === 0 ? (
@@ -110,20 +112,19 @@ export default function ProductsPage() {
         ) : (
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
             {products.map((product, i) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-              >
+              <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                 <MagicCard className="group overflow-hidden" gradientColor="#f4f4f5">
-                  <Link href={`/products/${product.id}`}>
+                  <Link href={`/products/${product.id}`}> 
                     <div className="relative h-48 overflow-hidden bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900">
                       {product.coverImage ? (
-                        <img src={product.coverImage} alt={product.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <img
+                          src={product.coverImage}
+                          alt={product.name}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
                       ) : (
                         <div className="flex h-full items-center justify-center">
-                          <div className={`h-16 w-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-700 opacity-70`} />
+                          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-700 opacity-70" />
                         </div>
                       )}
                       {product.stock <= 3 && product.stock > 0 && (
@@ -138,18 +139,26 @@ export default function ProductsPage() {
                       )}
                     </div>
                   </Link>
+
                   <div className="p-4">
-                    {product.category && (
-                      <span className="mb-1 block text-xs text-zinc-400">{product.category}</span>
-                    )}
-                    <Link href={`/products/${product.id}`}>
-                      <h3 className="font-semibold text-zinc-900 line-clamp-1 dark:text-white">{product.name}</h3>
+                    {product.category && <span className="mb-1 block text-xs text-zinc-400">{product.category}</span>}
+                    <Link href={`/products/${product.id}`}> 
+                      <h3 className="line-clamp-1 font-semibold text-zinc-900 dark:text-white">{product.name}</h3>
                     </Link>
+
                     <div className="mt-3 flex items-center justify-between">
                       <span className="font-bold text-zinc-900 dark:text-white">{formatPrice(product.price)}</span>
                       <button
                         disabled={product.stock === 0}
-                        onClick={() => addToCart({ id: product.id, name: product.name, price: product.price, quantity: 1, image: product.coverImage })}
+                        onClick={() =>
+                          addToCart({
+                            id: product.id,
+                            name: product.name,
+                            price: product.price,
+                            quantity: 1,
+                            image: product.coverImage,
+                          })
+                        }
                         className="flex items-center gap-1 rounded-full bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white transition-all hover:bg-zinc-700 disabled:opacity-50 dark:bg-white dark:text-zinc-900"
                       >
                         <ShoppingCart className="h-3 w-3" />
@@ -163,7 +172,6 @@ export default function ProductsPage() {
           </div>
         )}
       </main>
-      <Footer />
     </div>
   );
 }
