@@ -53,7 +53,8 @@
       "namePlaceholder": "Your name",
       "send": "Send Message",
       "sending": "Sending...",
-      "success": "Message sent! We'll get back to you soon."
+      "success": "Message sent! We'll get back to you soon.",
+      "error": "Failed to send message. Please try again."
     }
   },
   "products": {

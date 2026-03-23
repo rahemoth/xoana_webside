@@ -97,3 +97,12 @@ export const uploadApi = {
     });
   },
 };
+
+export const contactApi = {
+  submit: (data: { name: string; email: string; message: string }) =>
+    api.post('/api/contact', data),
+  getAll: (params?: { page?: number; size?: number }) =>
+    api.get('/api/contact', { params }),
+  markAsRead: (id: number) => api.put(`/api/contact/${id}/read`),
+  delete: (id: number) => api.delete(`/api/contact/${id}`),
+};

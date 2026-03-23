@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { useState } from 'react';
+import { contactApi } from '@/lib/api';
 
 export function ContactSection() {
   const t = useTranslations('home.contact');
@@ -12,13 +13,18 @@ export function ContactSection() {
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
-    // Simulate send
-    await new Promise((r) => setTimeout(r, 1000));
-    setSent(true);
+    setError('');
+    try {
+      await contactApi.submit({ name, email, message });
+      setSent(true);
+    } catch {
+      setError(t('error'));
+    }
     setSending(false);
   };
 
@@ -101,6 +107,9 @@ export function ContactSection() {
                   rows={5}
                   className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-violet-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder-zinc-500"
                 />
+                {error && (
+                  <p className="text-sm text-red-500">{error}</p>
+                )}
                 <button
                   type="submit"
                   disabled={sending}

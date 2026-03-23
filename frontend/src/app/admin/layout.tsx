@@ -4,7 +4,7 @@ import { useStore } from '@/store';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Users, Package, FileText, ShoppingBag, BarChart3, Settings, LogOut, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Users, Package, FileText, ShoppingBag, BarChart3, Settings, LogOut, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: '/admin/articles', label: '文章管理', icon: FileText },
   { href: '/admin/orders', label: '订单管理', icon: ShoppingBag },
   { href: '/admin/users', label: '用户管理', icon: Users },
+  { href: '/admin/messages', label: '联系消息', icon: MessageSquare },
   { href: '/admin/traffic', label: '流量统计', icon: BarChart3 },
   { href: '/admin/settings', label: '内容设置', icon: Settings },
 ];
