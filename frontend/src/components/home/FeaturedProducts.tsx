@@ -34,10 +34,6 @@ export function FeaturedProducts() {
 
   // Mock products if backend not available
   const displayProducts = products.length > 0 ? products : [
-    { id: 1, name: 'Pro Classic 指板', price: 299, stock: 10, coverImage: '', category: 'Pro Series' },
-    { id: 2, name: 'Street Deck X', price: 399, stock: 5, coverImage: '', category: 'Street' },
-    { id: 3, name: 'Limited 联名款', price: 599, stock: 3, coverImage: '', category: 'Limited' },
-    { id: 4, name: 'Mini Cruiser', price: 199, stock: 15, coverImage: '', category: 'Cruiser' },
   ];
 
   return (

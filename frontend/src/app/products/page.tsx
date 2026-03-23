@@ -21,17 +21,9 @@ interface Product {
   description?: string;
 }
 
-const CATEGORIES = ['全部', 'Pro Series', 'Street', 'Limited', 'Cruiser', 'Mini'];
+const CATEGORIES = ['全部', 'deck', 'wheel', 'truck', ];
 
 const MOCK_PRODUCTS: Product[] = [
-  { id: 1, name: 'Pro Classic 指板', price: 299, stock: 10, coverImage: '', category: 'Pro Series', description: '经典专业系列，适合初学者与进阶玩家' },
-  { id: 2, name: 'Street Deck X', price: 399, stock: 5, coverImage: '', category: 'Street', description: '街式风格，灵感来自街头滑板文化' },
-  { id: 3, name: 'Limited 联名款', price: 599, stock: 3, coverImage: '', category: 'Limited', description: '限量联名款，每块独一无二' },
-  { id: 4, name: 'Mini Cruiser', price: 199, stock: 15, coverImage: '', category: 'Cruiser', description: '迷你巡航款，轻便易携带' },
-  { id: 5, name: 'Pro Elite V2', price: 499, stock: 8, coverImage: '', category: 'Pro Series', description: 'Pro系列升级版，更高品质材料' },
-  { id: 6, name: 'Street Shadow', price: 359, stock: 12, coverImage: '', category: 'Street', description: '暗黑街式风格，彰显个性' },
-  { id: 7, name: 'Mini Pocket', price: 169, stock: 20, coverImage: '', category: 'Mini', description: '口袋系列，随时随地练习' },
-  { id: 8, name: 'Limited X-Edition', price: 799, stock: 1, coverImage: '', category: 'Limited', description: 'X特别版，全球限量50块' },
 ];
 
 export default function ProductsPage() {

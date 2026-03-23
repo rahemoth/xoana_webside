@@ -30,9 +30,7 @@ export function LatestArticles() {
   const articles: Article[] = data?.data?.data || [];
 
   const displayArticles = articles.length > 0 ? articles : [
-    { id: 1, title: '如何选择适合自己的指板', summary: '在众多指板中，如何找到最适合自己的那一款？本文将从材质、尺寸等方面为您详细介绍...', createdAt: '2024-01-15', viewCount: 256, author: 'XOANA Team', category: '教程' },
-    { id: 2, title: 'XOANA 2024新品发布预告', summary: '2024年我们将带来全新的产品系列，融合了更多现代元素与传统工艺...', createdAt: '2024-01-10', viewCount: 189, author: 'XOANA Team', category: '新品' },
-    { id: 3, title: '手指滑板文化历史', summary: '从上世纪90年代起源到今天，手指滑板已经发展成为一种独特的文化现象...', createdAt: '2024-01-05', viewCount: 312, author: 'XOANA Team', category: '文化' },
+
   ];
 
   return (

@@ -21,26 +21,7 @@ const MOCK_ARTICLES: Record<
     coverImage?: string;
   }
 > = {
-  1: {
-    id: 1,
-    title: '如何选择适合自己的指板',
-    content:
-      `<h2>材质选择</h2><p>枫木是最常见的指板材质，具有良好的弹性和耐久性。竹木材质更轻，适合追求轻盈手感的玩家。</p><h2>尺寸选择</h2><p>标准指板宽度为32-34mm，长度约100mm。初学者建议选择宽一点的板，更容易控制。</p><h2>握感测试</h2><p>最重要的是亲自试握，找到最适合自己手型的指板。</p>`,
-    createdAt: '2024-01-15',
-    viewCount: 256,
-    author: 'XOANA Team',
-    category: '教程',
-  },
-  2: {
-    id: 2,
-    title: 'XOANA 2024新品发布预告',
-    content:
-      `<h2>2024全新系列</h2><p>XOANA将于2024年推出全新的产品线，包含Pro Elite、Street Shadow以及限量版联名款。</p><p>每款产品都经过全新的设计迭代，在保持经典手感的同时，融入了更多现代元素。</p>`,
-    createdAt: '2024-01-10',
-    viewCount: 189,
-    author: 'XOANA Team',
-    category: '新品',
-  },
+
 };
 
 export default function ArticleDetailPage() {

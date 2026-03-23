@@ -21,51 +21,6 @@ interface Article {
 }
 
 const MOCK_ARTICLES: Article[] = [
-  {
-    id: 1,
-    title: '如何选择适合自己的指板',
-    summary: '在众多指板中，如何找到最适合自己的那一款？本文将从材质、尺寸等方面为您详细介绍。',
-    createdAt: '2024-01-15',
-    viewCount: 256,
-    author: 'XOANA Team',
-    category: '教程',
-  },
-  {
-    id: 2,
-    title: 'XOANA 2024新品发布预告',
-    summary: '2024年我们将带来全新的产品系列，融合了更多现代元素与传统工艺。',
-    createdAt: '2024-01-10',
-    viewCount: 189,
-    author: 'XOANA Team',
-    category: '新品',
-  },
-  {
-    id: 3,
-    title: '手指滑板文化历史',
-    summary: '从上世纪90年代起源到今天，手指滑板已经发展成为一种独特的文化现象。',
-    createdAt: '2024-01-05',
-    viewCount: 312,
-    author: 'XOANA Team',
-    category: '文化',
-  },
-  {
-    id: 4,
-    title: '入门技巧：kickflip 教学',
-    summary: '本文将详细介绍如何练习最基础的kickflip动作，适合完全没有基础的新手。',
-    createdAt: '2023-12-28',
-    viewCount: 445,
-    author: 'XOANA Team',
-    category: '教程',
-  },
-  {
-    id: 5,
-    title: '指板保养小技巧',
-    summary: '正确保养您的指板可以延长其使用寿命，本文分享几个实用的保养技巧。',
-    createdAt: '2023-12-20',
-    viewCount: 203,
-    author: 'XOANA Team',
-    category: '维护',
-  },
 ];
 
 export default function ArticlesPage() {

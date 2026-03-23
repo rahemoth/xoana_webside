@@ -26,51 +26,6 @@ const MOCK_PRODUCTS: Record<
     coverImage?: string;
   }
 > = {
-  1: {
-    id: 1,
-    name: 'Pro Classic 指板',
-    price: 299,
-    stock: 10,
-    description:
-      '经典专业系列指板，采用优质枫木制作，表面经过精细处理，适合初学者与进阶玩家。每一块都经过严格的质量检测，确保最佳的手感体验。',
-    category: 'Pro Series',
-    material: '枫木',
-    dimensions: '100mm × 34mm',
-    images: [],
-  },
-  2: {
-    id: 2,
-    name: 'Street Deck X',
-    price: 399,
-    stock: 5,
-    description: '街式风格指板，灵感来自街头滑板文化，具有独特的图案设计和优质的手感。',
-    category: 'Street',
-    material: '硬枫木',
-    dimensions: '100mm × 32mm',
-    images: [],
-  },
-  3: {
-    id: 3,
-    name: 'Limited 联名款',
-    price: 599,
-    stock: 3,
-    description: '限量联名款指板，每块独一无二，附带专属编号证书。',
-    category: 'Limited',
-    material: '竹木混合',
-    dimensions: '100mm × 33mm',
-    images: [],
-  },
-  4: {
-    id: 4,
-    name: 'Mini Cruiser',
-    price: 199,
-    stock: 15,
-    description: '迷你巡航款指板，轻便易携带，适合日常练习。',
-    category: 'Cruiser',
-    material: '枫木',
-    dimensions: '80mm × 30mm',
-    images: [],
-  },
 };
 
 export default function ProductDetailPage() {
