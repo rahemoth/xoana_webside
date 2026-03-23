@@ -21,10 +21,9 @@ export default function AdminDashboard() {
   const recentOrders = ordersData?.data?.data?.content || [];
 
   const cards = [
-    { label: '总用户数', value: stats.totalUsers || 2, icon: Users, color: 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400', trend: '+12%' },
-    { label: '总订单数', value: stats.totalOrders || 0, icon: ShoppingBag, color: 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400', trend: '+5%' },
-    { label: '7日访问量', value: stats.totalVisits || 0, icon: BarChart3, color: 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400', trend: '+23%' },
-    { label: '转化率', value: '4.2%', icon: TrendingUp, color: 'bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400', trend: '+1.1%' },
+    { label: '总用户数', value: stats.totalUsers || 2, icon: Users, color: 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400', trend: '' },
+    { label: '总订单数', value: stats.totalOrders || 0, icon: ShoppingBag, color: 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400', trend: '' },
+    { label: '7日访问量', value: stats.totalVisits || 0, icon: BarChart3, color: 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400', trend: '' },
   ];
 
   return (
