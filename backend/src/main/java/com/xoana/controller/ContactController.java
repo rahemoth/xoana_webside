@@ -5,7 +5,6 @@ import com.xoana.model.ContactMessage;
 import com.xoana.repository.ContactMessageRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -44,7 +43,7 @@ public class ContactController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         Page<ContactMessage> messages = contactMessageRepository.findAllByOrderByCreatedAtDesc(
-                PageRequest.of(page, size, Sort.by("createdAt").descending()));
+                PageRequest.of(page, size));
         return ResponseEntity.ok(ApiResponse.success(messages));
     }
 
