@@ -53,7 +53,8 @@
       "namePlaceholder": "您的姓名",
       "send": "发送消息",
       "sending": "发送中...",
-      "success": "消息已发送！我们将尽快与您联系。"
+      "success": "消息已发送！我们将尽快与您联系。",
+      "error": "发送失败，请稍后重试。"
     }
   },
   "products": {

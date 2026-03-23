@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { productApi } from '@/lib/api';
+import { productApi, uploadApi } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
-import { Plus, Edit, Trash2, X, Check } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProductForm {
@@ -14,19 +14,22 @@ interface ProductForm {
   stock: string;
   category: string;
   description: string;
+  descriptionEn: string;
   material: string;
   dimensions: string;
+  coverImage: string;
   featured: boolean;
   active: boolean;
 }
 
-const defaultForm: ProductForm = { name: '', nameEn: '', price: '', stock: '', category: '', description: '', material: '', dimensions: '', featured: false, active: true };
+const defaultForm: ProductForm = { name: '', nameEn: '', price: '', stock: '', category: '', description: '', descriptionEn: '', material: '', dimensions: '', coverImage: '', featured: false, active: true };
 
 export default function AdminProductsPage() {
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<ProductForm>(defaultForm);
+  const [uploading, setUploading] = useState(false);
 
   const { data } = useQuery({
     queryKey: ['admin-products'],
@@ -47,13 +50,24 @@ export default function AdminProductsPage() {
 
   const handleEdit = (product: any) => {
     setEditId(product.id);
-    setForm({ name: product.name, nameEn: product.nameEn || '', price: String(product.price), stock: String(product.stock), category: product.category || '', description: product.description || '', material: product.material || '', dimensions: product.dimensions || '', featured: product.featured, active: product.active });
+    setForm({ name: product.name, nameEn: product.nameEn || '', price: String(product.price), stock: String(product.stock), category: product.category || '', description: product.description || '', descriptionEn: product.descriptionEn || '', material: product.material || '', dimensions: product.dimensions || '', coverImage: product.coverImage || '', featured: product.featured, active: product.active });
     setShowForm(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createMutation.mutate({ ...form, price: Number(form.price), stock: Number(form.stock) });
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await uploadApi.uploadImage(file);
+      setForm(f => ({ ...f, coverImage: res.data?.data || '' }));
+    } catch { alert('上传失败'); }
+    setUploading(false);
   };
 
   return (
@@ -125,9 +139,28 @@ export default function AdminProductsPage() {
                   </div>
                 ))}
                 <div className="col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">产品描述</label>
+                  <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">产品描述（中文）</label>
                   <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3}
                     className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm focus:border-violet-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white" />
+                </div>
+                <div className="col-span-2">
+                  <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">产品描述（英文）</label>
+                  <textarea value={form.descriptionEn} onChange={e => setForm(f => ({ ...f, descriptionEn: e.target.value }))} rows={3}
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm focus:border-violet-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white" />
+                </div>
+                <div className="col-span-2">
+                  <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">封面图</label>
+                  <div className="flex gap-2">
+                    <input value={form.coverImage} onChange={e => setForm(f => ({ ...f, coverImage: e.target.value }))} placeholder="图片URL" className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm focus:border-violet-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white" />
+                    <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300">
+                      <Upload className="h-4 w-4" /> {uploading ? '上传中...' : '上传'}
+                      <input type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
+                    </label>
+                  </div>
+                  {form.coverImage && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={form.coverImage} alt="cover" className="mt-2 h-20 w-auto rounded-lg object-cover" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  )}
                 </div>
                 <div className="col-span-2 flex items-center gap-6">
                   <label className="flex items-center gap-2 text-sm">

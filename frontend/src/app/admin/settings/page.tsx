@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Save, Image as ImageIcon } from 'lucide-react';
+import { uploadApi } from '@/lib/api';
+import { Save, Image as ImageIcon, Upload } from 'lucide-react';
 
 interface SiteSettings {
   siteName: string;
@@ -86,6 +87,17 @@ export default function AdminSettingsPage() {
     return defaultSettings;
   });
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
+
+  const handleImageUpload = async (key: keyof SiteSettings, file: File) => {
+    setUploading(key);
+    try {
+      const res = await uploadApi.uploadImage(file);
+      const url = res.data?.data;
+      if (url) setSettings(s => ({ ...s, [key]: url }));
+    } catch { alert('上传失败'); }
+    setUploading(null);
+  };
 
   const handleSave = () => {
     if (typeof window !== 'undefined') {
@@ -123,12 +135,27 @@ export default function AdminSettingsPage() {
                       rows={3}
                       className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:border-violet-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                     />
+                  ) : field.image ? (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={settings[field.key]}
+                        onChange={e => setSettings(s => ({ ...s, [field.key]: e.target.value }))}
+                        placeholder="https://... 或点击上传"
+                        className="flex-1 rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:border-violet-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
+                      />
+                      <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                        <Upload className="h-4 w-4" />
+                        {uploading === field.key ? '上传中...' : '上传图片'}
+                        <input type="file" accept="image/*" className="hidden"
+                          onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(field.key, f); }} />
+                      </label>
+                    </div>
                   ) : (
                     <input
                       type="text"
                       value={settings[field.key]}
                       onChange={e => setSettings(s => ({ ...s, [field.key]: e.target.value }))}
-                      placeholder={field.image ? 'https://...' : ''}
                       className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:border-violet-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                     />
                   )}
