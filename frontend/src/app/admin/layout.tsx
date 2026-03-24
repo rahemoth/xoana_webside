@@ -28,10 +28,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (!user || user.role !== 'ADMIN') {
       router.push('/login');
     }
-  }, [user, _hasHydrated]);
+  }, [user, _hasHydrated, router]);
 
   // Render nothing while waiting for the persisted auth state to be restored
   if (!_hasHydrated) return null;
+
+  // Render nothing while the redirect is in-flight so children don't mount
+  // and fire API calls (e.g. trafficApi.getStats) before the navigation completes.
+  if (!user || user.role !== 'ADMIN') return null;
 
   return (
     <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
