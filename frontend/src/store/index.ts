@@ -88,7 +88,10 @@ export const useStore = create<AppState>()(
       name: 'xoana-store',
       partialize: (state) => ({ cart: state.cart, user: state.user, token: state.token }),
       onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
+        // state may be undefined when localStorage is empty (first visit).
+        // In that case, fall back to the already-created store reference so
+        // _hasHydrated still becomes true and the admin layout can redirect.
+        (state ?? useStore.getState()).setHasHydrated(true);
       },
     }
   )
