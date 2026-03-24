@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { Search, ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getImageUrl } from '@/lib/utils';
 import { MagicCard } from '@/components/magic';
 
 interface Product {
@@ -110,7 +110,7 @@ export default function ProductsPage() {
                     <div className="relative h-48 overflow-hidden bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900">
                       {product.coverImage ? (
                         <img
-                          src={product.coverImage}
+                          src={getImageUrl(product.coverImage)}
                           alt={product.name}
                           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />

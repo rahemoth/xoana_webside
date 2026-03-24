@@ -6,7 +6,7 @@ import { articleApi } from '@/lib/api';
 import Link from 'next/link';
 import { Clock, Eye, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { formatDate } from '@/lib/utils';
+import { formatDate, getImageUrl } from '@/lib/utils';
 
 interface Article {
   id: number;
@@ -53,7 +53,7 @@ export default function ArticlesPage() {
             >
               <div className="h-48 w-full shrink-0 bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900 sm:h-auto sm:w-64">
                 {article.coverImage ? (
-                  <img src={article.coverImage} alt={article.title} className="h-full w-full object-cover" />
+                  <img src={getImageUrl(article.coverImage)} alt={article.title} className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full min-h-[120px] items-center justify-center">
                     <div

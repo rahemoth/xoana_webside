@@ -33,3 +33,12 @@ export function getImageUrl(url: string | undefined | null): string {
   }
   return url;
 }
+
+/**
+ * Rewrites all `/uploads/…` src attributes in an HTML string to absolute
+ * backend URLs. Use this before passing article HTML to dangerouslySetInnerHTML.
+ */
+export function transformHtmlImageUrls(html: string): string {
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+  return html.replace(/src="(\/uploads\/[^"]+)"/g, `src="${apiBase}$1"`);
+}

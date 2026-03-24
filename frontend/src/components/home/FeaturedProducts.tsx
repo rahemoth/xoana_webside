@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { productApi } from '@/lib/api';
 import { useStore } from '@/store';
 import { MagicCard } from '@/components/magic';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getImageUrl } from '@/lib/utils';
 
 interface Product {
   id: number;
@@ -77,7 +77,7 @@ export function FeaturedProducts() {
                     <div className="flex h-52 items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900">
                       {product.coverImage ? (
                         <img
-                          src={product.coverImage}
+                          src={getImageUrl(product.coverImage)}
                           alt={product.name}
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />

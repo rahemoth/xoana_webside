@@ -6,23 +6,19 @@ import { articleApi } from '@/lib/api';
 import { useTranslations } from 'next-intl';
 import { Clock, Eye, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { formatDate } from '@/lib/utils';
+import { formatDate, getImageUrl, transformHtmlImageUrls } from '@/lib/utils';
 
-const MOCK_ARTICLES: Record<
-  number,
-  {
-    id: number;
-    title: string;
-    content: string;
-    createdAt: string;
-    viewCount: number;
-    author: string;
-    category: string;
-    coverImage?: string;
-  }
-> = {
-
-};
+interface Article {
+  id: number;
+  title: string;
+  content?: string;
+  summary?: string;
+  coverImage?: string;
+  createdAt: string;
+  viewCount: number;
+  author?: string;
+  category?: string;
+}
 
 export default function ArticleDetailPage() {
   const params = useParams();
@@ -30,13 +26,42 @@ export default function ArticleDetailPage() {
   const t = useTranslations('articles');
   const id = Number(params.id);
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['article', id],
     queryFn: () => articleApi.getById(id),
     enabled: !isNaN(id),
   });
 
-  const article = data?.data?.data || MOCK_ARTICLES[id] || MOCK_ARTICLES[1];
+  const article = data?.data?.data as Article | undefined;
+
+  if (isNaN(id)) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-white dark:bg-zinc-950">
+        <p className="text-zinc-500 dark:text-zinc-400">无效的文章 ID</p>
+        <button onClick={() => router.back()} className="mt-4 text-sm text-violet-600 hover:text-violet-700">返回</button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-950">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900 dark:border-zinc-700 dark:border-t-white" />
+      </div>
+    );
+  }
+
+  if (!article) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-white dark:bg-zinc-950">
+        <p className="text-zinc-500 dark:text-zinc-400">文章不存在</p>
+        <button onClick={() => router.back()} className="mt-4 text-sm text-violet-600 hover:text-violet-700">返回</button>
+      </div>
+    );
+  }
+
+  // Fix embedded image URLs in article HTML content so they resolve to the backend
+  const contentHtml = transformHtmlImageUrls(article.content || '');
 
   return (
     <div className="bg-white dark:bg-zinc-950">
@@ -71,13 +96,13 @@ export default function ArticleDetailPage() {
 
           {article.coverImage && (
             <div className="mt-8 overflow-hidden rounded-2xl">
-              <img src={article.coverImage} alt={article.title} className="w-full object-cover" />
+              <img src={getImageUrl(article.coverImage)} alt={article.title} className="w-full object-cover" />
             </div>
           )}
 
           <div
             className="prose prose-zinc mt-8 max-w-none dark:prose-invert"
-            dangerouslySetInnerHTML={{ __html: (article as any).content }}
+            dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
         </motion.article>
       </main>
