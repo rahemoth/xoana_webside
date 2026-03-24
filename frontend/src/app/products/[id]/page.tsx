@@ -7,26 +7,9 @@ import { useStore } from '@/store';
 import { useTranslations } from 'next-intl';
 import { ShoppingCart, ArrowLeft, Package, Ruler, Tag } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getImageUrl } from '@/lib/utils';
 import { useState } from 'react';
 import Link from 'next/link';
-
-const MOCK_PRODUCTS: Record<
-  number,
-  {
-    id: number;
-    name: string;
-    price: number;
-    stock: number;
-    description: string;
-    category: string;
-    material: string;
-    dimensions: string;
-    images: string[];
-    coverImage?: string;
-  }
-> = {
-};
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -38,13 +21,43 @@ export default function ProductDetailPage() {
 
   const id = Number(params.id);
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['product', id],
     queryFn: () => productApi.getById(id),
     enabled: !isNaN(id),
   });
 
-  const product = data?.data?.data || MOCK_PRODUCTS[id] || MOCK_PRODUCTS[1];
+  const product = data?.data?.data;
+
+  if (isNaN(id)) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-white dark:bg-zinc-950">
+        <p className="text-zinc-500 dark:text-zinc-400">无效的产品 ID</p>
+        <button onClick={() => router.back()} className="mt-4 text-sm text-violet-600 hover:text-violet-700">
+          返回
+        </button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-950">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900 dark:border-zinc-700 dark:border-t-white" />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-white dark:bg-zinc-950">
+        <p className="text-zinc-500 dark:text-zinc-400">产品不存在或已下架</p>
+        <button onClick={() => router.back()} className="mt-4 text-sm text-violet-600 hover:text-violet-700">
+          返回
+        </button>
+      </div>
+    );
+  }
 
   const handleAddToCart = () => {
     addToCart({
@@ -83,7 +96,7 @@ export default function ProductDetailPage() {
             <div className="aspect-square overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900">
               {product.coverImage || (product.images && product.images[activeImage]) ? (
                 <img
-                  src={product.coverImage || product.images[activeImage]}
+                  src={getImageUrl(product.coverImage || product.images[activeImage])}
                   alt={product.name}
                   className="h-full w-full object-cover"
                 />
@@ -104,7 +117,7 @@ export default function ProductDetailPage() {
                       i === activeImage ? 'border-violet-500' : 'border-transparent'
                     }`}
                   >
-                    <img src={img} alt="" className="h-full w-full object-cover" />
+                    <img src={getImageUrl(img)} alt="" className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>

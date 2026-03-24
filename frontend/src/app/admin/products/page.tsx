@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productApi, uploadApi } from '@/lib/api';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getImageUrl } from '@/lib/utils';
 import { Plus, Edit, Trash2, X, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -159,7 +159,7 @@ export default function AdminProductsPage() {
                   </div>
                   {form.coverImage && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={form.coverImage} alt="cover" className="mt-2 h-20 w-auto rounded-lg object-cover" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <img src={getImageUrl(form.coverImage)} alt="cover" className="mt-2 h-20 w-auto rounded-lg object-cover" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                   )}
                 </div>
                 <div className="col-span-2 flex items-center gap-6">

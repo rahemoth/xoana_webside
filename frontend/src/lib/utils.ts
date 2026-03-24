@@ -19,3 +19,17 @@ export function formatDate(date: string | Date): string {
     day: 'numeric',
   }).format(new Date(date));
 }
+
+/**
+ * Converts a relative upload URL (e.g. /uploads/image.jpg) to an absolute URL
+ * pointing to the backend server. This is necessary because uploaded files are
+ * served by the backend, not the Next.js frontend.
+ */
+export function getImageUrl(url: string | undefined | null): string {
+  if (!url) return '';
+  if (url.startsWith('/uploads/')) {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    return `${apiBase}${url}`;
+  }
+  return url;
+}
