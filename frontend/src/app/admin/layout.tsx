@@ -19,15 +19,20 @@ const NAV_ITEMS = [
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, clearAuth } = useStore();
+  const { user, clearAuth, _hasHydrated } = useStore();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
+    if (!_hasHydrated) return;
     if (!user || user.role !== 'ADMIN') {
       router.push('/login');
     }
-  }, [user]);
+  }, [user, _hasHydrated, router]);
+
+  if (!_hasHydrated) {
+    return null;
+  }
 
   return (
     <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
