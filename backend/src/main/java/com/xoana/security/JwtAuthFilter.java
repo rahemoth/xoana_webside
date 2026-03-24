@@ -46,11 +46,28 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+            // 详细日志
+            log.info("=== JWT 认证开始 ===");
+            log.info("请求 URI: {}", request.getRequestURI());
+            log.info("提取的用户名：{}", username);
+            log.info("UserDetails Authorities: {}", userDetails.getAuthorities());
+            log.info("Authorities 列表：");
+            userDetails.getAuthorities().forEach(auth ->
+                    log.info("  - Authority: {}", auth.getAuthority())
+            );
+
             if (jwtTokenProvider.validateToken(token, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                log.info("✅ 认证成功！");
+                log.info("SecurityContext 中的认证：{}", SecurityContextHolder.getContext().getAuthentication());
+                log.info("认证后的 Authorities: {}", SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+            } else {
+                log.warn("❌ Token 验证失败：{}", username);
             }
         }
 

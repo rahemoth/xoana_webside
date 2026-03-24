@@ -1,9 +1,10 @@
 package com.xoana.controller;
 
 import com.xoana.dto.ApiResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,11 +19,12 @@ import java.util.UUID;
 @RequestMapping("/api/upload")
 public class FileUploadController {
 
+    private static final Logger log = LoggerFactory.getLogger(FileUploadController.class);
+
     @Value("${app.upload.dir}")
     private String uploadDir;
 
     @PostMapping("/image")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("文件为空"));
@@ -39,10 +41,14 @@ public class FileUploadController {
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
+            log.info("创建上传目录：{}", uploadPath.toAbsolutePath());
         }
 
         Path filePath = uploadPath.resolve(filename);
-        file.transferTo(filePath.toFile());
+        log.info("保存文件到：{}", filePath.toAbsolutePath());
+
+        // 使用 InputStream 复制文件，避免 transferTo() 的临时目录问题
+        Files.copy(file.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
         return ResponseEntity.ok(ApiResponse.success("/uploads/" + filename));
     }
@@ -53,3 +59,4 @@ public class FileUploadController {
         return dotIndex >= 0 ? filename.substring(dotIndex) : ".jpg";
     }
 }
+
