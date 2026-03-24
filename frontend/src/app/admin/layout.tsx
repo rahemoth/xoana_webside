@@ -34,6 +34,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return null;
   }
 
+  // Do NOT render children while the redirect is in flight — this prevents
+  // React Query hooks inside child pages from firing unauthorized API requests.
+  if (!user || user.role !== 'ADMIN') {
+    return null;
+  }
+
   return (
     <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
       {/* Sidebar */}

@@ -88,11 +88,31 @@ export const useStore = create<AppState>()(
       name: 'xoana-store',
       partialize: (state) => ({ cart: state.cart, user: state.user, token: state.token }),
       onRehydrateStorage: () => (state) => {
-        // state may be undefined when localStorage is empty (first visit).
-        // In that case, fall back to the already-created store reference so
-        // _hasHydrated still becomes true and the admin layout can redirect.
-        (state ?? useStore.getState()).setHasHydrated(true);
+        // Called after rehydration with the restored state.
+        // state is undefined when localStorage is empty (first visit / after clearAuth).
+        // The safety net below handles the undefined case.
+        state?.setHasHydrated(true);
       },
     }
   )
 );
+
+// Safety net: ensure _hasHydrated is always set to true after the store has
+// fully initialised.  This covers the case where onRehydrateStorage is called
+// with state=undefined (empty localStorage / first visit), which would leave
+// _hasHydrated permanently false and cause the admin layout to show a blank page.
+//
+// useStore.persist.hasHydrated() returns true when the storage has already
+// been read (synchronous storage such as localStorage does this during create()).
+// onFinishHydration fires for async storage or for future rehydrate() calls.
+if (typeof window !== 'undefined') {
+  if (useStore.persist.hasHydrated()) {
+    // Synchronous storage already finished — ensure the flag is set.
+    useStore.getState().setHasHydrated(true);
+  } else {
+    // Async storage (or skipHydration=true) — wait for it.
+    useStore.persist.onFinishHydration(() => {
+      useStore.getState().setHasHydrated(true);
+    });
+  }
+}
