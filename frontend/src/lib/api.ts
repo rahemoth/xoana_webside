@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useStore } from '@/store';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
@@ -9,15 +10,23 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    // Read token from Zustand persisted storage
-    try {
-      const storeData = localStorage.getItem('xoana-store');
-      if (storeData) {
-        const parsed = JSON.parse(storeData);
-        const token = parsed?.state?.token;
-        if (token) config.headers.Authorization = `Bearer ${token}`;
-      }
-    } catch {}
+    // Prefer the live Zustand store token (always up-to-date, avoids any
+    // serialisation/deserialisation race with localStorage).
+    const token = useStore.getState().token;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      // Fallback: read directly from persisted storage in case the store has
+      // not yet hydrated (e.g. very first render before onRehydrateStorage).
+      try {
+        const storeData = localStorage.getItem('xoana-store');
+        if (storeData) {
+          const parsed = JSON.parse(storeData);
+          const storedToken = parsed?.state?.token;
+          if (storedToken) config.headers.Authorization = `Bearer ${storedToken}`;
+        }
+      } catch {}
+    }
   }
   return config;
 });
@@ -26,9 +35,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('xoana_token');
-      localStorage.removeItem('xoana_user');
-      window.location.href = '/login';
+      // Only redirect when we are NOT already on the login page to prevent
+      // redirect loops (e.g. when the login request itself returns 401).
+      if (!window.location.pathname.startsWith('/login')) {
+        useStore.getState().clearAuth();
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -92,9 +104,7 @@ export const uploadApi = {
   uploadImage: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/api/upload/image', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return api.post('/api/upload/image', formData);
   },
 };
 

@@ -25,8 +25,10 @@ interface AppState {
   // Auth
   user: User | null;
   token: string | null;
+  _hasHydrated: boolean;
   setAuth: (user: User, token: string) => void;
   clearAuth: () => void;
+  setHasHydrated: (state: boolean) => void;
 
   // Cart
   cart: CartItem[];
@@ -44,11 +46,15 @@ export const useStore = create<AppState>()(
       // Auth
       user: null,
       token: null,
+      _hasHydrated: false,
       setAuth: (user, token) => {
         set({ user, token });
       },
       clearAuth: () => {
         set({ user: null, token: null });
+      },
+      setHasHydrated: (hydrated) => {
+        set({ _hasHydrated: hydrated });
       },
 
       // Cart
@@ -81,6 +87,32 @@ export const useStore = create<AppState>()(
     {
       name: 'xoana-store',
       partialize: (state) => ({ cart: state.cart, user: state.user, token: state.token }),
+      onRehydrateStorage: () => (state) => {
+        // Called after rehydration with the restored state.
+        // state is undefined when localStorage is empty (first visit / after clearAuth).
+        // The safety net below handles the undefined case.
+        state?.setHasHydrated(true);
+      },
     }
   )
 );
+
+// Safety net: ensure _hasHydrated is always set to true after the store has
+// fully initialised.  This covers the case where onRehydrateStorage is called
+// with state=undefined (empty localStorage / first visit), which would leave
+// _hasHydrated permanently false and cause the admin layout to show a blank page.
+//
+// useStore.persist.hasHydrated() returns true when the storage has already
+// been read (synchronous storage such as localStorage does this during create()).
+// onFinishHydration fires for async storage or for future rehydrate() calls.
+if (typeof window !== 'undefined') {
+  if (useStore.persist.hasHydrated()) {
+    // Synchronous storage already finished — ensure the flag is set.
+    useStore.getState().setHasHydrated(true);
+  } else {
+    // Async storage (or skipHydration=true) — wait for it.
+    useStore.persist.onFinishHydration(() => {
+      useStore.getState().setHasHydrated(true);
+    });
+  }
+}

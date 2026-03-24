@@ -2,19 +2,25 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { trafficApi, orderApi } from '@/lib/api';
+import { useStore } from '@/store';
 import { motion } from 'framer-motion';
 import { Users, Package, BarChart3, ShoppingBag, TrendingUp, ArrowUpRight } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 
 export default function AdminDashboard() {
+  const { user, _hasHydrated } = useStore();
+  const isAdmin = _hasHydrated && !!user && user.role === 'ADMIN';
+
   const { data: statsData } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: () => trafficApi.getStats(7),
+    enabled: isAdmin,
   });
 
   const { data: ordersData } = useQuery({
     queryKey: ['admin-recent-orders'],
     queryFn: () => orderApi.getAllAdmin({ page: 0, size: 5 }),
+    enabled: isAdmin,
   });
 
   const stats = statsData?.data?.data || {};
