@@ -28,6 +28,10 @@ interface AppState {
   setAuth: (user: User, token: string) => void;
   clearAuth: () => void;
 
+  // Hydration flag: false until persist middleware restores state from localStorage
+  _hasHydrated: boolean;
+  setHasHydrated: (value: boolean) => void;
+
   // Cart
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
@@ -50,6 +54,10 @@ export const useStore = create<AppState>()(
       clearAuth: () => {
         set({ user: null, token: null });
       },
+
+      // Hydration flag
+      _hasHydrated: false,
+      setHasHydrated: (value) => set({ _hasHydrated: value }),
 
       // Cart
       cart: [],
@@ -80,6 +88,9 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'xoana-store',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
       partialize: (state) => ({ cart: state.cart, user: state.user, token: state.token }),
     }
   )

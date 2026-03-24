@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { ArrowRight, Clock, Eye } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { articleApi } from '@/lib/api';
-import { formatDate } from '@/lib/utils';
+import { formatDate, getImageUrl } from '@/lib/utils';
 
 interface Article {
   id: number;
@@ -73,7 +73,7 @@ export function LatestArticles() {
                 <div className="h-48 overflow-hidden bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-700 dark:to-zinc-800">
                   {article.coverImage ? (
                     <img
-                      src={article.coverImage}
+                      src={getImageUrl(article.coverImage)}
                       alt={article.title}
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
