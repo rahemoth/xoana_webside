@@ -233,7 +233,7 @@ export function Footer() {
         </div>
         <div className="mt-8 border-t border-zinc-200 pt-8 dark:border-zinc-800">
           <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
-            © 2024 XOANA. All rights reserved.
+            © 2024-2026 XOANA. All rights reserved.
           </p>
         </div>
       </div>
