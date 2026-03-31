@@ -5,17 +5,27 @@ import { motion } from 'framer-motion';
 import { NumberTicker } from '@/components/magic';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useLocale } from 'next-intl';
 
 export function BrandSection() {
   const t = useTranslations('home.brand');
-  const [brandImage, setBrandImage] = useState<string>('');
+  const locale = useLocale(); // 获取当前语言环境
+  const [settings, setSettings] = useState<{
+    brandDescription?: string;
+    brandDescriptionEn?: string;
+    brandImage?: string;
+  }>({});
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem('xoana_site_settings');
       if (saved) {
-        const s = JSON.parse(saved);
-        setBrandImage(s.brandImage || '');
+        const parsed = JSON.parse(saved);
+        setSettings({
+          brandDescription: parsed.brandDescription,
+          brandDescriptionEn: parsed.brandDescriptionEn,
+          brandImage: parsed.brandImage,
+        });
       }
     } catch {
       // ignore
@@ -27,6 +37,12 @@ export function BrandSection() {
     { value: 10000, label: t('stat2Label'), suffix: '+' },
     { value: 5, label: t('stat3Label'), suffix: '+' },
   ];
+
+  // 根据当前语言环境选择显示中文还是英文
+  const isEnglish = locale === 'en';
+  const displayDescription = isEnglish
+      ? (settings.brandDescriptionEn || settings.brandDescription || t('description'))
+      : (settings.brandDescription || settings.brandDescriptionEn || t('description'));
 
   return (
       <section
@@ -47,7 +63,7 @@ export function BrandSection() {
               <h2 className="mb-6 text-5xl font-bold">{t('title')}</h2>
 
               <p className="text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
-                {t('description')}
+                {displayDescription}
               </p>
 
               <div className="mt-12 grid grid-cols-3 gap-8">
@@ -83,9 +99,9 @@ export function BrandSection() {
             >
               {/* Brand visual */}
               <div className="relative aspect-square overflow-hidden rounded-3xl">
-                {brandImage ? (
+                {settings.brandImage ? (
                     <Image
-                        src={brandImage}
+                        src={settings.brandImage}
                         alt="About XOANA"
                         fill
                         className="object-cover"
@@ -120,3 +136,5 @@ export function BrandSection() {
       </section>
   );
 }
+
+

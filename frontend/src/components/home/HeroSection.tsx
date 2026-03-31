@@ -5,9 +5,41 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, Sparkles, ChevronDown } from 'lucide-react';
 import { Particles } from '@/components/magic';
+import { useEffect, useState } from 'react';
+import { useLocale } from 'next-intl';
 
 export function HeroSection() {
     const t = useTranslations('home.hero');
+    const locale = useLocale(); // 获取当前语言环境
+    const [settings, setSettings] = useState<{
+        heroTitle?: string;
+        heroTitleEn?: string;
+        heroSubtitle?: string;
+        heroSubtitleEn?: string;
+        heroDescription?: string;
+        heroDescriptionEn?: string;
+    }>({});
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            try {
+                const saved = localStorage.getItem('xoana_site_settings');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    setSettings({
+                        heroTitle: parsed.heroTitle,
+                        heroTitleEn: parsed.heroTitleEn,
+                        heroSubtitle: parsed.heroSubtitle,
+                        heroSubtitleEn: parsed.heroSubtitleEn,
+                        heroDescription: parsed.heroDescription,
+                        heroDescriptionEn: parsed.heroDescriptionEn,
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to load settings', e);
+            }
+        }
+    }, []);
 
     const handleLearnMoreClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
@@ -17,6 +49,20 @@ export function HeroSection() {
 
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
+
+    // 根据当前语言环境选择显示中文还是英文
+    const isEnglish = locale === 'en';
+    const displayTitle = isEnglish
+        ? (settings.heroTitleEn || settings.heroTitle?.replace('XOANA ', '') || t('title').replace('XOANA ', ''))
+        : (settings.heroTitle?.replace('XOANA ', '') || t('title').replace('XOANA ', ''));
+
+    const displaySubtitle = isEnglish
+        ? (settings.heroSubtitleEn || settings.heroSubtitle || t('subtitle'))
+        : (settings.heroSubtitle || settings.heroSubtitleEn || t('subtitle'));
+
+    const displayDescription = isEnglish
+        ? (settings.heroDescriptionEn || settings.heroDescription || t('description'))
+        : (settings.heroDescription || settings.heroDescriptionEn || t('description'));
 
     return (
         <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-white dark:bg-zinc-950">
@@ -44,15 +90,15 @@ export function HeroSection() {
             </span>
                         <br />
                         <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent dark:from-violet-400 dark:via-purple-400 dark:to-blue-400">
-              {t('title').replace('XOANA ', '')}
+              {displayTitle}
             </span>
                     </h1>
 
                     <p className="mx-auto mb-4 max-w-2xl text-xl font-light text-zinc-700 dark:text-white/60">
-                        {t('subtitle')}
+                        {displaySubtitle}
                     </p>
                     <p className="mx-auto mb-10 max-w-xl text-base text-zinc-500 dark:text-white/40">
-                        {t('description')}
+                        {displayDescription}
                     </p>
 
                     <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -76,7 +122,7 @@ export function HeroSection() {
                 </motion.div>
             </div>
 
-            {/* Scroll hint (replaces old indicator) */}
+            {/* Scroll hint */}
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -104,3 +150,4 @@ export function HeroSection() {
         </section>
     );
 }
+

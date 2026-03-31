@@ -55,6 +55,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers("/api/admin/upload/**").hasRole("ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )

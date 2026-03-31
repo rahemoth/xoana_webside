@@ -69,12 +69,8 @@ NEXT_PUBLIC_API_URL=http://localhost:8080
 ```bash
 cd backend
 
-# 构建并运行（后端默认 http://localhost:8080）
 mvn spring-boot:run
 
-# 或先构建 JAR 再运行
-mvn clean package -DskipTests
-java -jar target/xoana-backend-1.0.0.jar
 ```
 
 ### H2 控制台（开发模式）

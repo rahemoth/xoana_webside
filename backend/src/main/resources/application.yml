@@ -22,16 +22,20 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+    web:
+      resources:
+        static-locations: classpath:/static/,file:${UPLOAD_DIR:./uploads}/
 
-server:
-  port: 8080
+  server:
+    port: ${SERVER_PORT:8080}
+    url: ${SERVER_URL:http://localhost:8080}
 
 app:
   jwt:
     secret: xoanaSecretKey2024VeryLongSecretKeyForJWTSigningThatIsAtLeast256BitsLong
     expiration: 86400000  # 24 hours in ms
   upload:
-    dir: uploads/
+    dir: ${UPLOAD_DIR:./uploads}
   cors:
     allowed-origins: http://localhost:3000,http://localhost:3001
 
