@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productApi, uploadApi } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
-import { Plus, Edit, Trash2, X, Upload, Download, Upload as UploadIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Upload, Download, Upload as UploadIcon, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProductForm {
@@ -24,12 +24,21 @@ interface ProductForm {
 
 const defaultForm: ProductForm = { name: '', nameEn: '', price: '', stock: '', category: '', description: '', descriptionEn: '', material: '', dimensions: '', coverImage: '', featured: false, active: true };
 
+// 产品分类选项
+const CATEGORIES = [
+  { value: '', label: '请选择分类' },
+  { value: 'deck', label: 'Deck' },
+  { value: 'wheel', label: 'Wheel' },
+  { value: 'truck', label: 'Truck' },
+];
+
 export default function AdminProductsPage() {
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<ProductForm>(defaultForm);
   const [uploading, setUploading] = useState(false);
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
 
   const { data } = useQuery({
     queryKey: ['admin-products'],
@@ -242,7 +251,6 @@ export default function AdminProductsPage() {
                       { key: 'nameEn', label: '产品名（英文）' },
                       { key: 'price', label: '价格（元）', type: 'number', required: true },
                       { key: 'stock', label: '库存', type: 'number', required: true },
-                      { key: 'category', label: '分类' },
                       { key: 'material', label: '材质' },
                       { key: 'dimensions', label: '尺寸' },
                     ].map(f => (
@@ -253,6 +261,59 @@ export default function AdminProductsPage() {
                                  className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm focus:border-violet-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white" />
                         </div>
                     ))}
+
+                    {/* Category Dropdown */}
+                    <div className="relative col-span-1">
+                      <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">分类</label>
+                      <button
+                          type="button"
+                          onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                          className="flex w-full items-center justify-between rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm focus:border-violet-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
+                      >
+                        <span>
+                          {CATEGORIES.find(c => c.value === form.category)?.label || '请选择分类'}
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                      </button>
+
+                      <AnimatePresence>
+                        {isCategoryDropdownOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.2 }}
+                                className="absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
+                            >
+                              {CATEGORIES.map((cat) => (
+                                  <button
+                                      key={cat.value}
+                                      type="button"
+                                      onClick={() => {
+                                        setForm(prev => ({ ...prev, category: cat.value }));
+                                        setIsCategoryDropdownOpen(false);
+                                      }}
+                                      className={`w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700 ${
+                                          form.category === cat.value
+                                              ? 'bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400'
+                                              : 'text-zinc-700 dark:text-zinc-300'
+                                      }`}
+                                  >
+                                    {cat.label}
+                                  </button>
+                              ))}
+                            </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {isCategoryDropdownOpen && (
+                          <div
+                              className="fixed inset-0 z-40"
+                              onClick={() => setIsCategoryDropdownOpen(false)}
+                          />
+                      )}
+                    </div>
+
                     <div className="col-span-2">
                       <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">产品描述（中文）</label>
                       <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3}

@@ -240,8 +240,8 @@ export function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-zinc-900 dark:text-white">联系我们</h4>
             <ul className="mt-4 space-y-2">
-              <li className="text-sm text-zinc-500 dark:text-zinc-400">contact@xoana.com</li>
-              <li className="text-sm text-zinc-500 dark:text-zinc-400">微信: xoana_official</li>
+              <li className="text-sm text-zinc-500 dark:text-zinc-400">@xoana.cn</li>
+              <li className="text-sm text-zinc-500 dark:text-zinc-400">微信公众号: xoana</li>
             </ul>
           </div>
         </div>

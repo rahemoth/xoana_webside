@@ -5,8 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { productApi } from '@/lib/api';
 import { useStore } from '@/store';
 import { useTranslations } from 'next-intl';
-import { ShoppingCart, ArrowLeft, Package, Ruler, Tag } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ShoppingCart, ArrowLeft, Package, Ruler, Tag, CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { formatPrice } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -32,6 +32,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [savedProducts, setSavedProducts] = useState<any>({});
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // 从 localStorage 读取保存的产品
   useEffect(() => {
@@ -100,6 +101,10 @@ export default function ProductDetailPage() {
       quantity,
       image: product.coverImage || product.images?.[0],
     });
+
+    // 显示成功提示
+    setShowSuccessToast(true);
+    setTimeout(() => setShowSuccessToast(false), 3000);
   };
 
   const handleBuyNow = () => {
@@ -115,6 +120,24 @@ export default function ProductDetailPage() {
 
   return (
       <div className="bg-white dark:bg-zinc-950">
+        {/* Success Toast */}
+        <AnimatePresence>
+          {showSuccessToast && (
+              <motion.div
+                  initial={{ opacity: 0, y: -50, x: '-50%' }}
+                  animate={{ opacity: 1, y: 20, x: '-50%' }}
+                  exit={{ opacity: 0, y: -50, x: '-50%' }}
+                  transition={{ type: 'spring', damping: 20 }}
+                  className="fixed left-1/2 top-0 z-50 flex items-center gap-3 rounded-full bg-green-500 px-6 py-3 text-white shadow-lg"
+              >
+                <CheckCircle className="h-5 w-5" />
+                <span className="text-sm font-medium">
+                {locale === 'en' ? 'Added to cart!' : '已成功添加到购物车'}
+              </span>
+              </motion.div>
+          )}
+        </AnimatePresence>
+
         <main className="mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 lg:px-8">
           <button
               onClick={() => router.back()}
