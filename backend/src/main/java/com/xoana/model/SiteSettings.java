@@ -87,4 +87,7 @@ public class SiteSettings {
 
     @Column(length = 500)
     private String wechatQR = "";
+
+    @Column(name = "checkout_enabled")
+    private boolean checkoutEnabled = true;
 }

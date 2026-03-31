@@ -112,7 +112,10 @@
     "alipay": "Alipay",
     "paypal": "PayPal",
     "success": "Order created successfully!",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "checkoutDisabled": "Checkout is disabled",
+    "contactForPurchase": "Please contact us for purchase",
+    "checkoutClosed": "Checkout is closed"
   },
   "auth": {
     "login": "Login",

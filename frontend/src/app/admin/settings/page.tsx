@@ -38,6 +38,9 @@ interface SiteSettings {
   contactAddress: string;
   contactAddressEn: string;
   wechatQR: string;
+
+  // 结账设置 - Checkout Settings
+  checkoutEnabled: boolean;
 }
 
 const defaultSettings: SiteSettings = {
@@ -73,6 +76,9 @@ const defaultSettings: SiteSettings = {
   contactAddress: '上海市浦东新区 · 中国',
   contactAddressEn: 'Pudong New Area, Shanghai · China',
   wechatQR: '',
+
+  // 结账设置
+  checkoutEnabled: true,
 };
 
 type FieldDef = {
@@ -116,6 +122,9 @@ const SECTIONS: { title: string; fields: FieldDef[] }[] = [
       { key: 'contactAddressEn', label: 'Address (English)' },
       { key: 'wechatQR', label: '微信二维码 URL', image: true },
     ]},
+  { title: '结账设置 (Checkout)', fields: [
+      { key: 'checkoutEnabled', label: '启用在线结账功能' },
+    ]},
 ];
 
 
@@ -143,6 +152,7 @@ export default function AdminSettingsPage() {
 
   // Only run on client
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -150,6 +160,7 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     if (apiSettings?.data?.data) {
       const remote = apiSettings.data.data;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSettings({ ...defaultSettings, ...remote });
       // Also update localStorage cache
       if (typeof window !== 'undefined') {
@@ -229,6 +240,10 @@ export default function AdminSettingsPage() {
     input.click();
   };
 
+  const handleToggleChange = (key: keyof SiteSettings) => {
+    setSettings(s => ({ ...s, [key]: !s[key] }));
+  };
+
   return (
       <div>
         <div className="mb-6 flex items-center justify-between">
@@ -271,7 +286,7 @@ export default function AdminSettingsPage() {
                         </label>
                         {field.textarea ? (
                             <textarea
-                                value={mounted ? settings[field.key] : ''}
+                                value={mounted ? String(settings[field.key] ?? '') : ''}
                                 onChange={e => setSettings(s => ({ ...s, [field.key]: e.target.value }))}
                                 rows={3}
                                 className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:border-violet-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
@@ -280,7 +295,7 @@ export default function AdminSettingsPage() {
                             <div className="flex gap-2">
                               <input
                                   type="text"
-                                  value={mounted ? settings[field.key] : ''}
+                                  value={mounted ? String(settings[field.key] ?? '') : ''}
                                   onChange={e => setSettings(s => ({ ...s, [field.key]: e.target.value }))}
                                   placeholder="https://... 或点击上传"
                                   className="flex-1 rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:border-violet-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
@@ -292,19 +307,33 @@ export default function AdminSettingsPage() {
                                        onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(field.key, f); }} />
                               </label>
                             </div>
+                        ) : field.key === 'checkoutEnabled' ? (
+                            <button
+                                onClick={() => handleToggleChange(field.key)}
+                                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                                    mounted && settings[field.key] ? 'bg-green-500' : 'bg-zinc-300 dark:bg-zinc-600'
+                                }`}
+                            >
+                              <span
+                                  className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                                      mounted && settings[field.key] ? 'translate-x-7' : 'translate-x-1'
+                                  }`}
+                              />
+
+                            </button>
                         ) : (
                             <input
                                 type="text"
-                                value={mounted ? settings[field.key] : ''}
+                                value={mounted ? String(settings[field.key] ?? '') : ''}
                                 onChange={e => setSettings(s => ({ ...s, [field.key]: e.target.value }))}
                                 className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:border-violet-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                             />
                         )}
                         {/* Image preview - only render on client */}
-                        {mounted && field.image && settings[field.key] && (
+                        {mounted && field.image && typeof settings[field.key] === 'string' && settings[field.key] && (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                                src={settings[field.key]}
+                                src={settings[field.key] as string}
                                 alt="preview"
                                 className="mt-2 h-24 w-auto rounded-lg object-cover"
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}

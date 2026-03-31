@@ -112,7 +112,10 @@
     "alipay": "支付宝",
     "paypal": "PayPal",
     "success": "订单创建成功！",
-    "processing": "处理中..."
+    "processing": "处理中...",
+    "checkoutDisabled": "结账功能已关闭",
+    "contactForPurchase": "请联系我们进行购买",
+    "checkoutClosed": "结账通道已关闭"
   },
   "auth": {
     "login": "登录",
