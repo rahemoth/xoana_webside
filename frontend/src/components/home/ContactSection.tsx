@@ -3,44 +3,28 @@
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { contactApi } from '@/lib/api';
+import { useState } from 'react';
+import { contactApi, settingsApi } from '@/lib/api';
 import { useLocale } from 'next-intl';
+import { useQuery } from '@tanstack/react-query';
 
 export function ContactSection() {
   const t = useTranslations('home.contact');
-  const locale = useLocale(); // 获取当前语言环境
+  const locale = useLocale();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
-  const [settings, setSettings] = useState<{
-    contactEmail?: string;
-    contactPhone?: string;
-    contactAddress?: string;
-    contactAddressEn?: string;
-  }>({});
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('xoana_site_settings');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          setSettings({
-            contactEmail: parsed.contactEmail,
-            contactPhone: parsed.contactPhone,
-            contactAddress: parsed.contactAddress,
-            contactAddressEn: parsed.contactAddressEn,
-          });
-        }
-      } catch (e) {
-        console.error('Failed to load settings', e);
-      }
-    }
-  }, []);
+  const { data: settingsData } = useQuery({
+    queryKey: ['site-settings'],
+    queryFn: () => settingsApi.get(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const settings = settingsData?.data?.data || {};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

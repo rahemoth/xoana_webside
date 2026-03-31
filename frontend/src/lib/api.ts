@@ -85,15 +85,7 @@ export const userApi = {
 
 export const trafficApi = {
   track: (path: string) => api.post('/api/traffic/track', { path }).catch(() => {}),
-  getStats: (days?: number) => api.get('/api/traffic/stats', { params: { days } })
-      .catch((error) => {
-        // 如果是 403 权限错误，静默处理并返回空数据
-        if (error.response?.status === 403) {
-          console.warn('No permission to access traffic stats');
-          return { data: { data: null, message: '无权限访问' } };
-        }
-        throw error;
-      }),
+  getStats: (days?: number) => api.get('/api/traffic/stats', { params: { days } }),
 };
 
 export const uploadApi = {
@@ -113,4 +105,9 @@ export const contactApi = {
     api.get('/api/contact', { params }),
   markAsRead: (id: number) => api.put(`/api/contact/${id}/read`),
   delete: (id: number) => api.delete(`/api/contact/${id}`),
+};
+
+export const settingsApi = {
+  get: () => api.get('/api/settings'),
+  update: (data: Record<string, unknown>) => api.put('/api/settings', data),
 };
