@@ -155,50 +155,64 @@ export function Navbar() {
       {/* Mobile Menu */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 md:hidden"
-          >
-            <div className="space-y-1 px-4 py-3">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block rounded-lg px-3 py-2 text-base font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              {user ? (
-                <>
-                  <Link
-                    href="/profile"
-                    className="block rounded-lg px-3 py-2 text-base font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    {t('profile')}
-                  </Link>
+            <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 md:hidden"
+            >
+              <div className="space-y-1 px-4 py-3">
+                {navLinks.map((link) => (
+                    <Link
+                        key={link.href}
+                        href={link.href}
+                        className="block rounded-lg px-3 py-2 text-base font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                        onClick={() => setMobileOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                ))}
+
+                {/* Language toggle for mobile */}
+                <div className="flex items-center justify-between rounded-lg px-3 py-2">
+                <span className="text-base font-medium text-zinc-600 dark:text-zinc-400">
+                  Language / 语言
+                </span>
                   <button
-                    onClick={() => { clearAuth(); setMobileOpen(false); router.push('/'); }}
-                    className="block w-full rounded-lg px-3 py-2 text-left text-base font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                      onClick={() => { toggleLocale(); setMobileOpen(false); }}
+                      className="rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
                   >
-                    {t('logout')}
+                    {mounted ? (currentLocale === 'zh' ? 'EN' : '中文') : 'EN'}
                   </button>
-                </>
-              ) : (
-                <Link
-                  href="/login"
-                  className="block rounded-lg px-3 py-2 text-base font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {t('login')}
-                </Link>
-              )}
-            </div>
-          </motion.div>
+                </div>
+
+                {user ? (
+                    <>
+                      <Link
+                          href="/profile"
+                          className="block rounded-lg px-3 py-2 text-base font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                          onClick={() => setMobileOpen(false)}
+                      >
+                        {t('profile')}
+                      </Link>
+                      <button
+                          onClick={() => { clearAuth(); setMobileOpen(false); router.push('/'); }}
+                          className="block w-full rounded-lg px-3 py-2 text-left text-base font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                      >
+                        {t('logout')}
+                      </button>
+                    </>
+                ) : (
+                    <Link
+                        href="/login"
+                        className="block rounded-lg px-3 py-2 text-base font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                        onClick={() => setMobileOpen(false)}
+                    >
+                      {t('login')}
+                    </Link>
+                )}
+              </div>
+            </motion.div>
         )}
       </AnimatePresence>
     </header>
