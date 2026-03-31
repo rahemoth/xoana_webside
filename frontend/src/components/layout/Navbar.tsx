@@ -227,7 +227,7 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <h3 className="text-xl font-bold text-zinc-900 dark:text-white">XOANA</h3>
             <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-              独立手指滑板品牌，专注极致工艺与品质
+              独立手指滑板品牌
             </p>
           </div>
           <div>
