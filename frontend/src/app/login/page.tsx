@@ -83,11 +83,6 @@ export default function LoginPage() {
             <p>{t('noAccount')} <Link href="/register" className="font-medium text-violet-600 hover:text-violet-700">{t('registerHere')}</Link></p>
           </div>
 
-          <div className="mt-6 rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800">
-            <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">测试账号：</p>
-            <p className="text-xs text-zinc-500">普通用户: test / test123</p>
-            <p className="text-xs text-zinc-500">管理员: admin / admin123</p>
-          </div>
         </div>
       </motion.div>
     </div>

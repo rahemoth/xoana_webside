@@ -28,6 +28,10 @@ public class JwtTokenProvider {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        // 添加权限信息到 JWT claims 中
+        claims.put("authorities", userDetails.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .toList());
         return createToken(claims, userDetails.getUsername());
     }
 

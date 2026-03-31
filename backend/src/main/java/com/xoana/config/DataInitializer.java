@@ -16,9 +16,9 @@ public class DataInitializer {
             // Create default admin user
             if (!userRepository.existsByUsername("admin")) {
                 User admin = User.builder()
-                        .username("admin")
-                        .email("admin@xoana.com")
-                        .password(passwordEncoder.encode("admin123"))
+                        .username("jacky")
+                        .email("")
+                        .password(passwordEncoder.encode("jacky060620"))
                         .nickname("管理员")
                         .role(User.Role.ADMIN)
                         .enabled(true)
