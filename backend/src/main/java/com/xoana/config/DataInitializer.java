@@ -1,6 +1,8 @@
 package com.xoana.config;
 
+import com.xoana.model.SiteSettings;
 import com.xoana.model.User;
+import com.xoana.repository.SiteSettingsRepository;
 import com.xoana.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -11,13 +13,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class DataInitializer {
 
     @Bean
-    public CommandLineRunner initData(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public CommandLineRunner initData(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                                      SiteSettingsRepository siteSettingsRepository) {
         return args -> {
             // Create default admin user
-            if (!userRepository.existsByUsername("admin")) {
+            if (!userRepository.existsByUsername("jacky")) {
                 User admin = User.builder()
                         .username("jacky")
-                        .email("")
+                        .email("admin@xoana.com")
                         .password(passwordEncoder.encode("jacky060620"))
                         .nickname("管理员")
                         .role(User.Role.ADMIN)
@@ -37,6 +40,11 @@ public class DataInitializer {
                         .enabled(true)
                         .build();
                 userRepository.save(testUser);
+            }
+
+            // Initialize default site settings if not present
+            if (!siteSettingsRepository.existsById(1L)) {
+                siteSettingsRepository.save(new SiteSettings());
             }
         };
     }

@@ -5,41 +5,21 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, Sparkles, ChevronDown } from 'lucide-react';
 import { Particles } from '@/components/magic';
-import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
+import { useQuery } from '@tanstack/react-query';
+import { settingsApi } from '@/lib/api';
 
 export function HeroSection() {
     const t = useTranslations('home.hero');
-    const locale = useLocale(); // 获取当前语言环境
-    const [settings, setSettings] = useState<{
-        heroTitle?: string;
-        heroTitleEn?: string;
-        heroSubtitle?: string;
-        heroSubtitleEn?: string;
-        heroDescription?: string;
-        heroDescriptionEn?: string;
-    }>({});
+    const locale = useLocale();
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            try {
-                const saved = localStorage.getItem('xoana_site_settings');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    setSettings({
-                        heroTitle: parsed.heroTitle,
-                        heroTitleEn: parsed.heroTitleEn,
-                        heroSubtitle: parsed.heroSubtitle,
-                        heroSubtitleEn: parsed.heroSubtitleEn,
-                        heroDescription: parsed.heroDescription,
-                        heroDescriptionEn: parsed.heroDescriptionEn,
-                    });
-                }
-            } catch (e) {
-                console.error('Failed to load settings', e);
-            }
-        }
-    }, []);
+    const { data: settingsData } = useQuery({
+        queryKey: ['site-settings'],
+        queryFn: () => settingsApi.get(),
+        staleTime: 5 * 60 * 1000,
+    });
+
+    const settings = settingsData?.data?.data || {};
 
     const handleLearnMoreClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();

@@ -2,8 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useQuery } from '@tanstack/react-query';
+import { settingsApi } from '@/lib/api';
 
 const FALLBACK_COLORS = [
   'from-violet-500 to-purple-700',
@@ -23,25 +24,21 @@ const SIZES = [
 
 export function GallerySection() {
   const t = useTranslations('home.gallery');
-  const [galleryImages, setGalleryImages] = useState<string[]>(Array(5).fill(''));
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('xoana_site_settings');
-      if (saved) {
-        const s = JSON.parse(saved);
-        setGalleryImages([
-          s.galleryImage1 || '',
-          s.galleryImage2 || '',
-          s.galleryImage3 || '',
-          s.galleryImage4 || '',
-          s.galleryImage5 || '',
-        ]);
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
+  const { data: settingsData } = useQuery({
+    queryKey: ['site-settings'],
+    queryFn: () => settingsApi.get(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const s = settingsData?.data?.data || {};
+  const galleryImages = [
+    s.galleryImage1 || '',
+    s.galleryImage2 || '',
+    s.galleryImage3 || '',
+    s.galleryImage4 || '',
+    s.galleryImage5 || '',
+  ];
 
   return (
     <section className="bg-white py-24 dark:bg-zinc-950">

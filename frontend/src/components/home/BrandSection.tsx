@@ -3,34 +3,22 @@
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { NumberTicker } from '@/components/magic';
-import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useLocale } from 'next-intl';
+import { useQuery } from '@tanstack/react-query';
+import { settingsApi } from '@/lib/api';
 
 export function BrandSection() {
   const t = useTranslations('home.brand');
-  const locale = useLocale(); // 获取当前语言环境
-  const [settings, setSettings] = useState<{
-    brandDescription?: string;
-    brandDescriptionEn?: string;
-    brandImage?: string;
-  }>({});
+  const locale = useLocale();
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('xoana_site_settings');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setSettings({
-          brandDescription: parsed.brandDescription,
-          brandDescriptionEn: parsed.brandDescriptionEn,
-          brandImage: parsed.brandImage,
-        });
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
+  const { data: settingsData } = useQuery({
+    queryKey: ['site-settings'],
+    queryFn: () => settingsApi.get(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const settings = settingsData?.data?.data || {};
 
   const stats = [
     { value: 100, label: t('stat1Label'), suffix: '+' },

@@ -2,12 +2,11 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { articleApi } from '@/lib/api';
+import { articleApi, settingsApi } from '@/lib/api';
 import { useTranslations } from 'next-intl';
 import { Clock, Eye, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatDate } from '@/lib/utils';
-import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
 
 const MOCK_ARTICLES: Record<
@@ -33,21 +32,12 @@ export default function ArticleDetailPage() {
     const t = useTranslations('articles');
     const id = Number(params.id);
 
-    const [siteSettings, setSiteSettings] = useState<any>(null);
-
-    // 从 localStorage 读取网站设置
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            try {
-                const saved = localStorage.getItem('xoana_site_settings');
-                if (saved) {
-                    setSiteSettings(JSON.parse(saved));
-                }
-            } catch (e) {
-                console.error('Failed to load site settings', e);
-            }
-        }
-    }, []);
+    // Pre-warm the settings cache (shared with other components)
+    useQuery({
+        queryKey: ['site-settings'],
+        queryFn: () => settingsApi.get(),
+        staleTime: 5 * 60 * 1000,
+    });
 
     const { data, isLoading, error } = useQuery({
         queryKey: ['article', id],

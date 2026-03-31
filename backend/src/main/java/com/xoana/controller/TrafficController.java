@@ -46,7 +46,7 @@ public class TrafficController {
     }
 
     @GetMapping("/stats")
-    // Deleted:@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getStats(
             @RequestParam(defaultValue = "7") int days) {
         LocalDateTime start = LocalDateTime.now().minusDays(days);

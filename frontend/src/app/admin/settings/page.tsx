@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { uploadApi } from '@/lib/api';
+import { uploadApi, settingsApi } from '@/lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Save, Image as ImageIcon, Upload, Download, Upload as UploadIcon } from 'lucide-react';
 
 interface SiteSettings {
@@ -35,6 +36,7 @@ interface SiteSettings {
   contactEmail: string;
   contactPhone: string;
   contactAddress: string;
+  contactAddressEn: string;
   wechatQR: string;
 }
 
@@ -69,6 +71,7 @@ const defaultSettings: SiteSettings = {
   contactEmail: 'contact@xoana.com',
   contactPhone: '+86 138 0000 0000',
   contactAddress: '上海市浦东新区 · 中国',
+  contactAddressEn: 'Pudong New Area, Shanghai · China',
   wechatQR: '',
 };
 
@@ -109,34 +112,51 @@ const SECTIONS: { title: string; fields: FieldDef[] }[] = [
   { title: '联系信息 (Contact)', fields: [
       { key: 'contactEmail', label: '联系邮箱' },
       { key: 'contactPhone', label: '联系电话' },
-      { key: 'contactAddress', label: '地址' },
+      { key: 'contactAddress', label: '地址（中文）' },
+      { key: 'contactAddressEn', label: 'Address (English)' },
       { key: 'wechatQR', label: '微信二维码 URL', image: true },
     ]},
 ];
 
 
 export default function AdminSettingsPage() {
+  const qc = useQueryClient();
   const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
   const [mounted, setMounted] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
 
-  // 只在客户端加载 localStorage 数据
+  // Load settings from API
+  const { data: apiSettings } = useQuery({
+    queryKey: ['site-settings'],
+    queryFn: () => settingsApi.get(),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: (data: SiteSettings) => settingsApi.update(data as unknown as Record<string, unknown>),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['site-settings'] });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    },
+  });
+
+  // Only run on client
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('xoana_site_settings');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          setSettings({ ...defaultSettings, ...parsed });
-        } catch (e) {
-          console.error('Failed to parse settings from localStorage', e);
-        }
+  }, []);
+
+  // Apply API settings when loaded
+  useEffect(() => {
+    if (apiSettings?.data?.data) {
+      const remote = apiSettings.data.data;
+      setSettings({ ...defaultSettings, ...remote });
+      // Also update localStorage cache
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('xoana_site_settings', JSON.stringify({ ...defaultSettings, ...remote }));
       }
     }
-  }, []);
+  }, [apiSettings]);
 
   const handleImageUpload = async (key: keyof SiteSettings, file: File) => {
     setUploading(key);
@@ -156,11 +176,12 @@ export default function AdminSettingsPage() {
   };
 
   const handleSave = () => {
+    // Save to database via API
+    saveMutation.mutate(settings);
+    // Also update localStorage cache
     if (typeof window !== 'undefined') {
       localStorage.setItem('xoana_site_settings', JSON.stringify(settings));
     }
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
   // 导出设置为 JSON 文件
