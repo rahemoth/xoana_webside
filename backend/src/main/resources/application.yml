@@ -17,6 +17,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+    open-in-view: false
   servlet:
     multipart:
       max-file-size: 10MB
@@ -31,9 +32,11 @@ server:
 
 logging:
   level:
-    root: WARN
-    com.xoana.security.JwtAuthFilter: DEBUG
-    org.springframework.security: WARN
+    root: INFO
+    com.xoana: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: INFO
+    org.hibernate.type: INFO
 
 app:
   jwt:
