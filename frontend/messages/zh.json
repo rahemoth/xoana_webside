@@ -20,7 +20,7 @@
     },
     "featured": {
       "title": "推荐产品",
-      "subtitle": "精选优质指板，满足您的需求",
+      "subtitle": "精选优质手指滑板，满足您的需求",
       "viewAll": "查看全部"
     },
     "articles": {
@@ -34,9 +34,9 @@
       "description": "XOANA 是一个专注于独立手指滑板的品牌，我们致力于为每一位玩家带来最高品质的产品体验。每一块指板都经过精心设计与手工打造，融合了传统滑板文化与现代工艺美学。",
       "stat1": "100+",
       "stat1Label": "款式设计",
-      "stat2": "10000+",
+      "stat2": "1000+",
       "stat2Label": "满意客户",
-      "stat3": "5+",
+      "stat3": "3+",
       "stat3Label": "年品牌历史"
     },
     "gallery": {
@@ -192,5 +192,13 @@
     "language": "语言",
     "chinese": "中文",
     "english": "English"
+  },
+  "footer": {
+    "description": "独立手指滑板品牌",
+    "products": "产品",
+    "allProducts": "全部产品",
+    "articles": "文章",
+    "contactUs": "联系我们",
+    "wechat": "微信公众号：xoana"
   }
 }

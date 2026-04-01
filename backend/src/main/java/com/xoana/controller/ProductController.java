@@ -22,6 +22,15 @@ public class ProductController {
         this.productRepository = productRepository;
     }
 
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Page<Product>>> getAllProductsForAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(ApiResponse.success(productRepository.findAll(pageable)));
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<Page<Product>>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,

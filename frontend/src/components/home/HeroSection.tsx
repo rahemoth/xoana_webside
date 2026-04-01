@@ -59,10 +59,6 @@ export function HeroSection() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
                 >
-                    <div className="mb-6 inline-flex items-center rounded-full border border-zinc-900/10 bg-zinc-900/5 px-4 py-2 text-sm text-zinc-700 backdrop-blur-sm dark:border-white/10 dark:bg-white/5 dark:text-white/70">
-                        <Sparkles className="mr-2 h-4 w-4 text-violet-600 dark:text-violet-400" />
-                        独立手指滑板
-                    </div>
 
                     <h1 className="mb-6 text-6xl font-bold tracking-tight text-zinc-900 md:text-8xl dark:text-white">
             <span className="bg-gradient-to-r from-zinc-900 via-zinc-900 to-zinc-900/60 bg-clip-text text-transparent dark:from-white dark:via-white dark:to-white/60">

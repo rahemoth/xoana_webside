@@ -34,9 +34,9 @@
       "description": "XOANA is a brand focused on independent fingerboards. We are committed to delivering the highest quality products to every player. Each fingerboard is carefully designed and handcrafted, blending traditional skateboard culture with modern craftsmanship.",
       "stat1": "100+",
       "stat1Label": "Designs",
-      "stat2": "10000+",
+      "stat2": "1000+",
       "stat2Label": "Happy Customers",
-      "stat3": "5+",
+      "stat3": "3+",
       "stat3Label": "Years of Heritage"
     },
     "gallery": {
@@ -192,5 +192,13 @@
     "language": "Language",
     "chinese": "中文",
     "english": "English"
+  },
+  "footer": {
+    "description": "Independent Fingerboard Brand",
+    "products": "Products",
+    "allProducts": "All Products",
+    "articles": "Articles",
+    "contactUs": "Contact Us",
+    "wechat": "WeChat: xoana"
   }
 }

@@ -90,4 +90,31 @@ public class SiteSettings {
 
     @Column(name = "checkout_enabled")
     private boolean checkoutEnabled = true;
+    // 品牌统计数据
+    @Column(name = "stat1_value")
+    private Integer stat1Value = 100;
+
+    @Column(length = 50, name = "stat1_label")
+    private String stat1Label = "款式设计";
+
+    @Column(name = "stat2_value")
+    private Integer stat2Value = 10000;
+
+    @Column(length = 50, name = "stat2_label")
+    private String stat2Label = "满意客户";
+
+    @Column(name = "stat3_value")
+    private Integer stat3Value = 5;
+
+    @Column(length = 50, name = "stat3_label")
+    private String stat3Label = "年品牌历史";
+
+    @Column(name = "stat1_label_en", length = 50)
+    private String stat1LabelEn = "Design Styles";
+
+    @Column(name = "stat2_label_en", length = 50)
+    private String stat2LabelEn = "Satisfied Customers";
+
+    @Column(name = "stat3_label_en", length = 50)
+    private String stat3LabelEn = "Years of Brand History";
 }

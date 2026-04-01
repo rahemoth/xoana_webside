@@ -43,6 +43,8 @@ export default function ProfilePage() {
     queryKey: ['my-orders'],
     queryFn: () => orderApi.getMyOrders({ page: 0, size: 20 }),
     enabled: !!user,
+    staleTime: 1000 * 60 * 5, // 5 分钟内不自动刷新
+    refetchOnWindowFocus: true, // 窗口获得焦点时刷新
   });
 
   if (!user) return null;

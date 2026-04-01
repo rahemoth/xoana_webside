@@ -20,14 +20,26 @@ export function BrandSection() {
 
   const settings = settingsData?.data?.data || {};
 
+  const isEnglish = locale === 'en';
+
   const stats = [
-    { value: 100, label: t('stat1Label'), suffix: '+' },
-    { value: 10000, label: t('stat2Label'), suffix: '+' },
-    { value: 5, label: t('stat3Label'), suffix: '+' },
+    {
+      value: settings.stat1Value || 100,
+      label: isEnglish ? (settings.stat1LabelEn || t('stat1Label')) : (settings.stat1Label || t('stat1Label')),
+      suffix: '+'
+    },
+    {
+      value: settings.stat2Value || 10000,
+      label: isEnglish ? (settings.stat2LabelEn || t('stat2Label')) : (settings.stat2Label || t('stat2Label')),
+      suffix: '+'
+    },
+    {
+      value: settings.stat3Value || 5,
+      label: isEnglish ? (settings.stat3LabelEn || t('stat3Label')) : (settings.stat3Label || t('stat3Label')),
+      suffix: '+'
+    },
   ];
 
-  // 根据当前语言环境选择显示中文还是英文
-  const isEnglish = locale === 'en';
   const displayDescription = isEnglish
       ? (settings.brandDescriptionEn || settings.brandDescription || t('description'))
       : (settings.brandDescription || settings.brandDescriptionEn || t('description'));

@@ -41,6 +41,17 @@ interface SiteSettings {
 
   // 结账设置 - Checkout Settings
   checkoutEnabled: boolean;
+
+  // 品牌统计数据
+  stat1Value: number;
+  stat1Label: string;
+  stat1LabelEn: string;
+  stat2Value: number;
+  stat2Label: string;
+  stat2LabelEn: string;
+  stat3Value: number;
+  stat3Label: string;
+  stat3LabelEn: string;
 }
 
 const defaultSettings: SiteSettings = {
@@ -79,6 +90,17 @@ const defaultSettings: SiteSettings = {
 
   // 结账设置
   checkoutEnabled: true,
+
+  // 品牌统计数据
+  stat1Value: 100,
+  stat1Label: '款式设计',
+  stat1LabelEn: 'Design Styles',
+  stat2Value: 10000,
+  stat2Label: '满意客户',
+  stat2LabelEn: 'Satisfied Customers',
+  stat3Value: 5,
+  stat3Label: '年品牌历史',
+  stat3LabelEn: 'Years of Brand History',
 };
 
 type FieldDef = {
@@ -108,6 +130,17 @@ const SECTIONS: { title: string; fields: FieldDef[] }[] = [
       { key: 'brandDescriptionEn', label: 'Brand Description (English)', textarea: true },
       { key: 'brandImage', label: '品牌图片 URL', image: true },
     ]},
+  { title: '品牌统计数据 (Brand Stats)', fields: [
+      { key: 'stat1Value', label: '统计 1 数值' },
+      { key: 'stat1Label', label: '统计 1 标签（中文）' },
+      { key: 'stat1LabelEn', label: 'Stat 1 Label (English)' },
+      { key: 'stat2Value', label: '统计 2 数值' },
+      { key: 'stat2Label', label: '统计 2 标签（中文）' },
+      { key: 'stat2LabelEn', label: 'Stat 2 Label (English)' },
+      { key: 'stat3Value', label: '统计 3 数值' },
+      { key: 'stat3Label', label: '统计 3 标签（中文）' },
+      { key: 'stat3LabelEn', label: 'Stat 3 Label (English)' },
+    ]},
   { title: '产品展示 (Gallery)', fields: [
       { key: 'galleryImage1', label: 'Gallery 图片 1 URL（大图，左上）', image: true },
       { key: 'galleryImage2', label: 'Gallery 图片 2 URL（右上）', image: true },
@@ -125,6 +158,7 @@ const SECTIONS: { title: string; fields: FieldDef[] }[] = [
   { title: '结账设置 (Checkout)', fields: [
       { key: 'checkoutEnabled', label: '启用在线结账功能' },
     ]},
+
 ];
 
 

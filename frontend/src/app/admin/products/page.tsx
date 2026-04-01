@@ -42,10 +42,14 @@ export default function AdminProductsPage() {
 
   const { data } = useQuery({
     queryKey: ['admin-products'],
-    queryFn: () => productApi.getAll({ page: 0, size: 100 }),
+    queryFn: async () => {
+      const res = await productApi.getAllForAdmin({ page: 0, size: 100 });
+      return res.data;
+    },
   });
 
-  const products = data?.data?.data?.content || [];
+  const products = Array.isArray(data?.content) ? data.content : (Array.isArray(data?.data?.content) ? data.data.content : []);
+
 
   const createMutation = useMutation({
     mutationFn: (data: unknown) => editId ? productApi.update(editId, data) : productApi.create(data),
