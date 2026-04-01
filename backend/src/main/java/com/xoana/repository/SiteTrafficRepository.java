@@ -15,8 +15,8 @@ public interface SiteTrafficRepository extends JpaRepository<SiteTraffic, Long> 
            "GROUP BY t.pagePath ORDER BY visits DESC")
     List<Object[]> getTopPages(LocalDateTime start, LocalDateTime end);
 
-    @Query("SELECT DATE(t.visitedAt), COUNT(t) FROM SiteTraffic t " +
-           "WHERE t.visitedAt BETWEEN :start AND :end " +
-           "GROUP BY DATE(t.visitedAt) ORDER BY DATE(t.visitedAt)")
+    @Query("SELECT FUNCTION('DAY', t.visitedAt), COUNT(t) FROM SiteTraffic t " +
+            "WHERE t.visitedAt BETWEEN :start AND :end " +
+            "GROUP BY FUNCTION('DAY', t.visitedAt) ORDER BY FUNCTION('DAY', t.visitedAt)")
     List<Object[]> getDailyVisits(LocalDateTime start, LocalDateTime end);
 }

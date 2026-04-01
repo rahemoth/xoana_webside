@@ -14,7 +14,8 @@ api.interceptors.request.use((config) => {
       const storeData = localStorage.getItem('xoana-store');
       if (storeData) {
         const parsed = JSON.parse(storeData);
-        const token = parsed?.state?.token;
+        // 尝试多种可能的 token 路径
+        const token = parsed?.state?.token || parsed?.token;
         if (token) config.headers.Authorization = `Bearer ${token}`;
       }
     } catch {}

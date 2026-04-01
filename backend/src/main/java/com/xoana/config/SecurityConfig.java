@@ -66,8 +66,8 @@ public class SecurityConfig {
                 )
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .authenticationProvider(authenticationProvider())
-                // ★★★ 关键修改：将 JWT Filter 放在 SecurityContextPersistenceFilter 之前 ★★★
-                .addFilterBefore(jwtAuthFilter, SecurityContextPersistenceFilter.class);
+                // 修复：将 JWT Filter 放在 UsernamePasswordAuthenticationFilter 之前
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
