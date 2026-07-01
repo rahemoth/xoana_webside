@@ -28,6 +28,9 @@ interface AppState {
   setAuth: (user: User, token: string) => void;
   clearAuth: () => void;
 
+  // Hydration
+  _hydrated: boolean;
+
   // Cart
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
@@ -44,6 +47,9 @@ export const useStore = create<AppState>()(
       // Auth
       user: null,
       token: null,
+
+      // Hydration flag — components must wait for this before checking auth
+      _hydrated: false,
       setAuth: (user, token) => {
         set({ user, token });
       },
@@ -81,6 +87,10 @@ export const useStore = create<AppState>()(
     {
       name: 'xoana-store',
       partialize: (state) => ({ cart: state.cart, user: state.user, token: state.token }),
+      onRehydrateStorage: () => {
+        // 持久化数据恢复完成后标记 hydrated，组件据此判断是否可以检查 auth
+        return () => useStore.setState({ _hydrated: true });
+      },
     }
   )
 );

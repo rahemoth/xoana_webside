@@ -26,9 +26,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+      // 只有 401（未认证）才清除登录状态并跳转；403 是权限不足，不应踢用户
       if (error.response?.status === 401 && typeof window !== 'undefined') {
-        localStorage.removeItem('xoana_token');
-        localStorage.removeItem('xoana_user');
+        localStorage.removeItem('xoana-store');
         window.location.href = '/login';
       }
       return Promise.reject(error);

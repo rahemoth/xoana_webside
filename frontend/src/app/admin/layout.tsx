@@ -2,7 +2,7 @@
 
 import { useStore } from '@/store';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { LayoutDashboard, Users, Package, FileText, ShoppingBag, BarChart3, Settings, LogOut, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -19,27 +19,17 @@ const NAV_ITEMS = [
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, clearAuth } = useStore();
+  const { user, clearAuth, _hydrated } = useStore();
   const router = useRouter();
   const pathname = usePathname();
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 给 persist 一点时间恢复数据（最多等 1 秒）
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!loading && (!user || user.role !== 'ADMIN')) {
+    if (_hydrated && (!user || user.role !== 'ADMIN')) {
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [user, _hydrated, router]);
 
-  if (loading) {
+  if (!_hydrated) {
     return (
         <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
           <div className="text-center">

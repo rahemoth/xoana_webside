@@ -50,7 +50,16 @@ npm run dev
 npm run build
 npm start
 ```
+打包后需要上传到服务器的文件：
+前端必须文件
 
+frontend/
+├── .next/              # 构建产物（最重要）
+├── public/             # 静态资源
+├── package.json        # 依赖配置
+├── next.config.mjs     # Next.js 配置
+├── .env.local          # 环境变量（包含后端 API 地址）
+└── node_modules/
 ### 前端环境变量
 
 在 `frontend/` 目录下创建 `.env.local` 文件：

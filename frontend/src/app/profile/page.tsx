@@ -14,13 +14,13 @@ type Tab = 'orders' | 'settings';
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
-  const { user, clearAuth, setAuth } = useStore();
+  const { user, clearAuth, setAuth, _hydrated } = useStore();
   const router = useRouter();
 
-  // 未登录跳转（不要在 render 阶段 push）
+  // 等待 persist 从 localStorage 恢复数据完成后再检查登录状态
   useEffect(() => {
-    if (!user) router.replace('/login');
-  }, [user, router]);
+    if (_hydrated && !user) router.replace('/login');
+  }, [user, _hydrated, router]);
 
   const [tab, setTab] = useState<Tab>('orders');
 
@@ -46,6 +46,18 @@ export default function ProfilePage() {
     staleTime: 1000 * 60 * 5, // 5 分钟内不自动刷新
     refetchOnWindowFocus: true, // 窗口获得焦点时刷新
   });
+
+  // 持久化状态尚未恢复，显示加载中，避免闪跳登录页
+  if (!_hydrated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-950">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-violet-500 border-t-transparent" />
+          <p className="text-sm text-zinc-400">加载中...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) return null;
 

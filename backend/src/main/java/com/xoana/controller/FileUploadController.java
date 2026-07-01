@@ -77,7 +77,7 @@ public class FileUploadController {
         }
 
         // 返回完整的 URL
-        String imageUrl = serverUrl + "/uploads/" + filename;
+        String imageUrl = "/uploads/" + filename;
         System.out.println("返回的图片 URL：" + imageUrl);
         System.out.println("=== 文件上传完成 ===");
 

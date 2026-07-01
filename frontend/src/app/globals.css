@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* 限制 Tailwind v4 只扫描源代码文件，避免 PostCSS 子进程累积导致内存耗尽 */
+@source "../app/**/*.{tsx,ts,jsx,js}";
+@source "../components/**/*.{tsx,ts,jsx,js}";
+@source "../lib/**/*.{tsx,ts,jsx,js}";
+@source "../store/**/*.{tsx,ts,jsx,js}";
+
 /* Enable class-based dark mode for Tailwind v4 (required for next-themes) */
 @custom-variant dark (&:where(.dark, .dark *));
 
