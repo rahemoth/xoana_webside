@@ -1,6 +1,7 @@
 'use client';
 
 import { useStore } from '@/store';
+import { useHydrated } from '@/store/useHydrated';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
@@ -19,17 +20,18 @@ const NAV_ITEMS = [
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, clearAuth, _hydrated } = useStore();
+  const { user, clearAuth } = useStore();
+  const hydrated = useHydrated();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (_hydrated && (!user || user.role !== 'ADMIN')) {
+    if (hydrated && (!user || user.role !== 'ADMIN')) {
       router.push('/login');
     }
-  }, [user, _hydrated, router]);
+  }, [user, hydrated, router]);
 
-  if (!_hydrated) {
+  if (!hydrated) {
     return (
         <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
           <div className="text-center">

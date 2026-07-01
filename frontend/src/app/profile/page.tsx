@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useStore } from '@/store';
+import { useHydrated } from '@/store/useHydrated';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { orderApi, userApi } from '@/lib/api';
@@ -14,13 +15,14 @@ type Tab = 'orders' | 'settings';
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
-  const { user, clearAuth, setAuth, _hydrated } = useStore();
+  const { user, clearAuth, setAuth } = useStore();
+  const hydrated = useHydrated();
   const router = useRouter();
 
-  // 等待 persist 从 localStorage 恢复数据完成后再检查登录状态
+  // 等持久化状态恢复后再检查登录状态
   useEffect(() => {
-    if (_hydrated && !user) router.replace('/login');
-  }, [user, _hydrated, router]);
+    if (hydrated && !user) router.replace('/login');
+  }, [user, hydrated, router]);
 
   const [tab, setTab] = useState<Tab>('orders');
 
@@ -48,7 +50,7 @@ export default function ProfilePage() {
   });
 
   // 持久化状态尚未恢复，显示加载中，避免闪跳登录页
-  if (!_hydrated) {
+  if (!hydrated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-950">
         <div className="text-center">
