@@ -5,7 +5,8 @@ import { uploadApi, settingsApi } from '@/lib/api';
 import { GalleryManager } from '@/components/admin/GalleryManager';
 import { GalleryImage, getGalleryImages, galleryImageUrl } from '@/lib/gallery';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Save, Image as ImageIcon, Upload, Download, Upload as UploadIcon } from 'lucide-react';
+import { Save, Image as ImageIcon, Images, Upload, Download, Upload as UploadIcon } from 'lucide-react';
+import { MediaPickerDialog } from '@/components/admin/MediaPickerDialog';
 
 interface SiteSettings {
   // 基本信息 - Basic Info
@@ -155,6 +156,7 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [libraryField, setLibraryField] = useState<keyof SiteSettings | null>(null);
 
   // Load settings from API
   const { data: apiSettings, isPending: loading, isError: loadError, refetch } = useQuery({
@@ -185,9 +187,9 @@ export default function AdminSettingsPage() {
     setUploading(key);
     try {
       const res = await uploadApi.uploadImage(file);
-      const url = galleryImageUrl(res.data.data);
-
-      if (url) setSettings(s => ({ ...s, [key]: url }));
+      const url = res.data?.data;
+      // Keep the server path in the database; it is resolved to the backend host at render time.
+      if (typeof url === 'string' && url) setSettings(s => ({ ...s, [key]: url }));
     } catch { alert('上传失败'); }
     setUploading(null);
   };
@@ -320,6 +322,14 @@ export default function AdminSettingsPage() {
                                 <input type="file" accept="image/*" className="hidden"
                                        onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(field.key, f); }} />
                               </label>
+                              <button
+                                  type="button"
+                                  onClick={() => setLibraryField(field.key)}
+                                  className="flex items-center gap-2 whitespace-nowrap rounded-xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
+                              >
+                                <Images className="h-4 w-4" />
+                                从图片库选择
+                              </button>
                             </div>
                         ) : field.key === 'checkoutEnabled' ? (
                             <button
@@ -347,7 +357,7 @@ export default function AdminSettingsPage() {
                         {field.image && typeof settings[field.key] === 'string' && settings[field.key] && (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                                src={settings[field.key] as string}
+                                src={galleryImageUrl(settings[field.key] as string)}
                                 alt="preview"
                                 className="mt-2 h-24 w-auto rounded-lg object-cover"
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
@@ -360,6 +370,20 @@ export default function AdminSettingsPage() {
           ))}
         </div>
         </fieldset>
+
+        <MediaPickerDialog
+          open={libraryField !== null}
+          title="从图片库选择图片"
+          hint="点击图片即可填入对应的图片字段，记得点击“保存设置”生效。"
+          onClose={() => setLibraryField(null)}
+          selected={libraryField ? String(settings[libraryField] ?? '') : ''}
+          onSelect={(src) => {
+            if (!libraryField) return;
+            setSettings(current => ({ ...current, [libraryField]: src }));
+            setSaved(false);
+            setLibraryField(null);
+          }}
+        />
       </div>
   );
 }

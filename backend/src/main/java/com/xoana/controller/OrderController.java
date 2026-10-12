@@ -17,6 +17,7 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -58,6 +59,16 @@ public class OrderController {
             return ResponseEntity.status(409).body(ApiResponse.error("在线结账暂未开放，请联系商家购买"));
         }
         User user = userRepository.findByUsername(auth.getName()).orElseThrow();
+        String clientToken = request.getClientToken() == null ? null : request.getClientToken().trim();
+        if (clientToken != null && clientToken.isEmpty()) {
+            clientToken = null;
+        }
+        if (clientToken != null) {
+            Order existing = orderRepository.findByClientToken(clientToken).orElse(null);
+            if (existing != null) {
+                return repeatSubmission(existing, user);
+            }
+        }
         List<OrderItem> items = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
         Map<Long, Long> quantities = new HashMap<>();
@@ -70,6 +81,7 @@ public class OrderController {
                 .contactPhone(request.getContactPhone())
                 .paymentMethod(request.getPaymentMethod())
                 .remark(request.getRemark())
+                .clientToken(clientToken)
                 .status(Order.OrderStatus.PENDING)
                 .build();
 
@@ -103,7 +115,23 @@ public class OrderController {
 
         order.setItems(items);
         order.setTotalAmount(total);
-        return ResponseEntity.ok(ApiResponse.success(orderRepository.save(order)));
+        try {
+            return ResponseEntity.ok(ApiResponse.success(orderRepository.save(order)));
+        } catch (DataIntegrityViolationException exception) {
+            // A concurrent retry of the same submission won the unique client_token index.
+            Order existing = clientToken == null ? null : orderRepository.findByClientToken(clientToken).orElse(null);
+            if (existing != null) {
+                return repeatSubmission(existing, user);
+            }
+            throw exception;
+        }
+    }
+
+    private ResponseEntity<ApiResponse<Order>> repeatSubmission(Order existing, User user) {
+        if (existing.getUser() == null || !existing.getUser().getId().equals(user.getId())) {
+            return ResponseEntity.status(409).body(ApiResponse.error("订单提交标识已被使用"));
+        }
+        return ResponseEntity.ok(ApiResponse.success(existing));
     }
 
     @GetMapping("/my")

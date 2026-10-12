@@ -240,6 +240,124 @@ class AuditRegressionTests {
         assertThat(stored.getReferer()).hasSize(500);
     }
 
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void partialSettingsUpdatesKeepEveryOmittedField() throws Exception {
+        mvc.perform(put("/api/settings").contentType("application/json").content(
+                        "{\"siteName\":\"Audit site\",\"checkoutEnabled\":false,\"contactEmail\":\"audit-settings@example.com\","
+                                + "\"galleryImage1\":\"/uploads/legacy-audit.jpg\","
+                                + "\"galleryImages\":[{\"src\":\"/uploads/audit.jpg\",\"alt\":\"audit\",\"fit\":\"cover\"}]}"))
+                .andExpect(status().isOk());
+
+        // The edit screen sends only the field it changed; everything else must survive.
+        mvc.perform(put("/api/settings").contentType("application/json").content("{\"heroTitleEn\":\"Only the hero\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.heroTitleEn").value("Only the hero"))
+                .andExpect(jsonPath("$.data.siteName").value("Audit site"))
+                .andExpect(jsonPath("$.data.checkoutEnabled").value(false))
+                .andExpect(jsonPath("$.data.contactEmail").value("audit-settings@example.com"))
+                .andExpect(jsonPath("$.data.galleryImage1").value("/uploads/legacy-audit.jpg"))
+                .andExpect(jsonPath("$.data.galleryImages[0].src").value("/uploads/audit.jpg"));
+
+        mvc.perform(put("/api/settings").contentType("application/json")
+                        .content("{\"siteName\":\"" + "x".repeat(101) + "\"}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.success").value(false));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"/api/products", "/api/articles", "/api/orders/admin/all", "/api/users/admin/all", "/api/contact"})
+    @WithMockUser(roles = "ADMIN")
+    void pageOffsetsBeyondTheSupportedRangeAreClientErrors(String path) throws Exception {
+        mvc.perform(get(path).param("page", "2147483647").param("size", "1000"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    void anonymousPageOffsetsBeyondTheSupportedRangeAreClientErrors() throws Exception {
+        mvc.perform(get("/api/products").param("page", "2147483647").param("size", "1000"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void productEditsAreRejectedWhenTheRowChangedSinceTheFormWasLoaded() throws Exception {
+        long formVersion = products.findById(product.getId()).orElseThrow().getVersion();
+
+        // A sale happens while the edit form is open.
+        Product sold = products.findById(product.getId()).orElseThrow();
+        sold.setStock(7);
+        products.saveAndFlush(sold);
+        entityManager.clear();
+
+        mvc.perform(put("/api/products/" + product.getId()).contentType("application/json")
+                        .content("{\"stock\":10,\"expectedVersion\":" + formVersion + "}"))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.success").value(false));
+        entityManager.clear();
+        assertThat(products.findById(product.getId()).orElseThrow().getStock()).isEqualTo(7);
+
+        long currentVersion = products.findById(product.getId()).orElseThrow().getVersion();
+        mvc.perform(put("/api/products/" + product.getId()).contentType("application/json")
+                        .content("{\"stock\":4,\"expectedVersion\":" + currentVersion + "}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.stock").value(4));
+    }
+
+    @Test
+    void repeatedOrderSubmissionsWithTheSameTokenCreateOneOrder() throws Exception {
+        String body = "{\"items\":[{\"productId\":" + product.getId() + ",\"quantity\":1}],"
+                + "\"shippingAddress\":\"Audit street\",\"contactName\":\"Audit\",\"contactPhone\":\"123\","
+                + "\"paymentMethod\":\"ALIPAY\",\"clientToken\":\"audit-checkout-token\"}";
+        long ordersBefore = orders.count();
+
+        mvc.perform(post("/api/orders").with(user(customer.getUsername()).roles("USER"))
+                        .contentType("application/json").content(body))
+                .andExpect(status().isOk());
+        Order created = orders.findByClientToken("audit-checkout-token").orElseThrow();
+
+        mvc.perform(post("/api/orders").with(user(customer.getUsername()).roles("USER"))
+                        .contentType("application/json").content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value(created.getId().intValue()))
+                .andExpect(jsonPath("$.data.totalAmount").value(10));
+        entityManager.flush();
+        assertThat(orders.count()).isEqualTo(ordersBefore + 1);
+        assertThat(products.findById(product.getId()).orElseThrow().getStock()).isEqualTo(10);
+    }
+
+    @Test
+    void articleViewsCountOncePerGetAndHeadRequestsDoNotCount() throws Exception {
+        Article article = articles.saveAndFlush(Article.builder().title("Audit article").published(true)
+                .viewCount(0).createdAt(LocalDateTime.now()).build());
+
+        mvc.perform(get("/api/articles/" + article.getId()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.viewCount").value(1));
+        mvc.perform(get("/api/articles/" + article.getId()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.viewCount").value(2));
+        mvc.perform(head("/api/articles/" + article.getId())).andExpect(status().isOk());
+        mvc.perform(get("/api/articles/recent")).andExpect(status().isOk());
+        entityManager.flush();
+        entityManager.clear();
+        assertThat(articles.findById(article.getId()).orElseThrow().getViewCount()).isEqualTo(2);
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void productsFromBeforeOptimisticLockingCanStillBeEdited() throws Exception {
+        // Simulate a row created before the version column existed.
+        entityManager.createNativeQuery("UPDATE products SET version = NULL WHERE id = ?1")
+                .setParameter(1, product.getId()).executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(products.initializeMissingVersions()).isPositive();
+
+        mvc.perform(put("/api/products/" + product.getId()).contentType("application/json")
+                        .content("{\"name\":\"Edited legacy product\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.name").value("Edited legacy product"));
+        entityManager.flush();
+        entityManager.clear();
+        assertThat(products.findById(product.getId()).orElseThrow().getName()).isEqualTo("Edited legacy product");
+    }
+
     private Order order(Order.OrderStatus status) {
         return orders.saveAndFlush(Order.builder().orderNo("audit-" + java.util.UUID.randomUUID())
                 .user(customer).totalAmount(BigDecimal.TEN).status(status).build());

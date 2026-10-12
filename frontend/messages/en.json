@@ -16,7 +16,8 @@
       "subtitle": "Ultimate Craft, Pure Quality",
       "description": "Every fingerboard is uniquely handcrafted, blending traditional techniques with modern design",
       "shopNow": "Shop Now",
-      "learnMore": "Learn More"
+      "learnMore": "Learn More",
+      "scrollDown": "Scroll down"
     },
     "featured": {
       "title": "Featured Products",
@@ -78,6 +79,12 @@
     "inStock": "In Stock",
     "noProducts": "No products found",
     "loading": "Loading...",
+    "lowStock": "Only {count} left",
+    "stockCount": "{count} in stock",
+    "notFound": "Product not found",
+    "notFoundHint": "Sorry, this product does not exist or is no longer available.",
+    "backToList": "Back to products",
+    "viewCart": "View cart",
     "pagination": {
       "prev": "Previous",
       "next": "Next"
@@ -89,7 +96,10 @@
     "readMore": "Read More",
     "publishedAt": "Published",
     "views": "Views",
-    "noArticles": "No articles yet"
+    "noArticles": "No articles yet",
+    "notFound": "Article not found",
+    "notFoundHint": "Sorry, this article does not exist or has been removed.",
+    "backToList": "Back to articles"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -100,7 +110,8 @@
     "subtotal": "Subtotal",
     "total": "Total",
     "checkout": "Checkout",
-    "itemCount": "items"
+    "itemCount": "items",
+    "stockLimit": "Only {count} in stock"
   },
   "checkout": {
     "title": "Checkout",
@@ -112,14 +123,29 @@
     "name": "Name",
     "phone": "Phone",
     "address": "Address",
-    "wechat": "WeChat Pay",
-    "alipay": "Alipay",
     "paypal": "PayPal",
     "success": "Order created successfully!",
     "processing": "Processing...",
     "checkoutDisabled": "Checkout is disabled",
     "contactForPurchase": "Please contact us for purchase",
-    "checkoutClosed": "Checkout is closed"
+    "checkoutClosed": "Checkout is closed",
+    "total": "Total",
+    "testMode": "(test mode)",
+    "retryPayment": "Retry Payment",
+    "confirmPayment": "Confirm Payment",
+    "orderSuccess": "Order placed!",
+    "paidWith": "Payment method: {method} · test mode",
+    "backHome": "Back to Home",
+    "viewOrders": "View Orders",
+    "orderCreated": "Order {id} was created. The items below belong to that order; you can pay it here or from your profile. Items added later stay in the cart.",
+    "settingsFailed": "Unable to load checkout settings.",
+    "retry": "Retry",
+    "contactRequired": "Please fill in the contact name, phone and shipping address.",
+    "createFailed": "Could not create the order. Please try again.",
+    "paymentIncomplete": "Payment was not completed. Please try again.",
+    "sessionChanged": "Your session changed. Please log in again to view this order in your profile.",
+    "orderFailed": "The order or payment failed. Please check your connection and try again. Your cart is unchanged.",
+    "priceUpdated": "The item prices changed; this order now totals {amount}. Please confirm to continue."
   },
   "auth": {
     "login": "Login",
@@ -135,7 +161,12 @@
     "hasAccount": "Already have an account?",
     "loginHere": "Login here",
     "registerHere": "Register here",
-    "forgotPassword": "Forgot password?"
+    "forgotPassword": "Forgot password?",
+    "loginFailed": "Login failed. Please check your username and password.",
+    "loggingIn": "Logging in...",
+    "registerFailed": "Registration failed. Please try again.",
+    "registering": "Registering...",
+    "passwordMismatch": "The passwords do not match"
   },
   "profile": {
     "continuePayment": "Continue payment",
@@ -152,6 +183,18 @@
     "phone": "Phone",
     "address": "Default Address",
     "save": "Save",
+    "saving": "Saving...",
+    "loading": "Loading...",
+    "profileSaved": "Profile saved.",
+    "saveFailed": "Save failed. Please try again.",
+    "saveFailedNetwork": "Save failed. Please check your connection and try again.",
+    "admin": "Administrator",
+    "adminPanel": "Admin panel",
+    "logout": "Log out",
+    "ordersLoading": "Loading orders...",
+    "ordersFailed": "Could not load orders.",
+    "noOrders": "No orders yet",
+    "orderNo": "Order no.",
     "orderStatus": {
       "PENDING": "Pending",
       "PAID": "Paid",

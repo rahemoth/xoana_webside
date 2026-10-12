@@ -13,6 +13,10 @@ final class Pagination {
         if (page < 0 || size < 1 || size > 1000) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page 必须大于等于 0，size 必须在 1 到 1000 之间");
         }
+        // JPA rejects offsets above Integer.MAX_VALUE; answer with 400 instead of a server error.
+        if ((long) page * size > Integer.MAX_VALUE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "页码超出支持范围");
+        }
         return PageRequest.of(page, size, sort);
     }
 

@@ -69,9 +69,10 @@ export default function AdminArticlesPage() {
     setUploading(true);
     try {
       const res = await uploadApi.uploadImage(file);
-      const imageUrl = galleryImageUrl(res.data.data);
-
-      setForm(f => ({ ...f, coverImage: imageUrl }));
+      const uploaded = res.data?.data;
+      if (typeof uploaded !== 'string' || !uploaded) throw new Error('未返回图片地址');
+      // Keep the server path in the database; it is resolved to the backend host at render time.
+      setForm(f => ({ ...f, coverImage: uploaded }));
     } catch (err) {
       alert(getApiErrorMessage(err, '上传失败'));
     } finally {

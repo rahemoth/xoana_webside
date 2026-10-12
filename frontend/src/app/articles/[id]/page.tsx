@@ -8,12 +8,14 @@ import { articleApi } from '@/lib/api';
 import { Clock, Eye, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatDate } from '@/lib/utils';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 export default function ArticleDetailPage() {
     const params = useParams<{ id: string }>();
     const router = useRouter();
     const locale = useLocale();
+    const t = useTranslations('articles');
+    const commonT = useTranslations('common');
     const id = Number(params.id);
 
     const { data, isLoading, error } = useQuery({
@@ -30,7 +32,7 @@ export default function ArticleDetailPage() {
             <div className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-950">
                 <div className="text-center">
                     <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-violet-500 border-t-transparent" />
-                    <p className="text-sm text-zinc-500">加载中...</p>
+                    <p className="text-sm text-zinc-500">{commonT('loading')}</p>
                 </div>
             </div>
         );
@@ -45,16 +47,16 @@ export default function ArticleDetailPage() {
                         onClick={() => router.back()}
                         className="mb-8 flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
                     >
-                        <ArrowLeft className="h-4 w-4" /> 返回
+                        <ArrowLeft className="h-4 w-4" /> {commonT('back')}
                     </button>
                     <div className="py-16 text-center">
-                        <h1 className="mb-4 text-2xl font-bold text-zinc-900 dark:text-white">文章未找到</h1>
-                        <p className="text-zinc-500 dark:text-zinc-400">抱歉，您查看的文章不存在或已被删除。</p>
+                        <h1 className="mb-4 text-2xl font-bold text-zinc-900 dark:text-white">{t('notFound')}</h1>
+                        <p className="text-zinc-500 dark:text-zinc-400">{t('notFoundHint')}</p>
                         <button
                             onClick={() => router.push('/articles')}
                             className="mt-6 rounded-xl bg-zinc-900 px-6 py-3 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900"
                         >
-                            返回文章列表
+                            {t('backToList')}
                         </button>
                     </div>
                 </main>
@@ -74,7 +76,7 @@ export default function ArticleDetailPage() {
                     onClick={() => router.back()}
                     className="mb-8 flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
                 >
-                    <ArrowLeft className="h-4 w-4" /> 返回
+                    <ArrowLeft className="h-4 w-4" /> {commonT('back')}
                 </button>
 
                 <motion.article initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -90,11 +92,11 @@ export default function ArticleDetailPage() {
                         {article.author && <span>{article.author}</span>}
                         <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
-                            {formatDate(article.createdAt)}
+                            {formatDate(article.createdAt, locale)}
             </span>
                         <span className="flex items-center gap-1">
               <Eye className="h-3 w-3" />
-                            {article.viewCount} 次阅读
+                            {article.viewCount} {t('views')}
             </span>
                     </div>
 

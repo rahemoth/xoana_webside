@@ -13,7 +13,7 @@ import { useStore } from '@/store';
 import { formatPrice } from '@/lib/utils';
 import { MagicCard } from '@/components/magic';
 import { useLocale } from 'next-intl';
-import { SAMPLE_PRODUCTS, type StoreProduct } from '@/lib/sample-products';
+import type { Product } from '@/types/models';
 import { QueryFeedback } from '@/components/ui/query-feedback';
 
 const CATEGORIES = ['全部', 'deck', 'wheel', 'truck', ];
@@ -25,7 +25,7 @@ export default function ProductsPage() {
     const [search, setSearch] = useState('');
     const [category, setCategory] = useState('全部');
     const [page, setPage] = useState(0);
-    const [showSuccessToast, setShowSuccessToast] = useState(false);
+    const [toast, setToast] = useState<{ text: string; error: boolean } | null>(null);
 
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ['products', page, category, search],
@@ -38,22 +38,21 @@ export default function ProductsPage() {
             }),
     });
 
-    const serverProducts: StoreProduct[] = data?.data?.data?.content || [];
+    const products: Product[] = data?.data?.data?.content || [];
     const totalPages: number = data?.data?.data?.totalPages || 1;
-    const serverIds = new Set(serverProducts.map((product) => product.id));
-    const localProducts = SAMPLE_PRODUCTS.filter((product) => {
-        const matchCategory = category === '全部' || product.category === category;
-        const searchableName = `${product.name} ${product.nameEn || ''}`.toLowerCase();
-        const matchSearch = !search || searchableName.includes(search.toLowerCase());
-        return matchCategory && matchSearch && !serverIds.has(product.id);
-    });
-    const products = [
-        ...(page === 0 ? localProducts : []),
-        ...serverProducts,
-    ];
 
-    const handleAddToCart = (product: StoreProduct) => {
-        if (product.demoOnly || product.stock <= 0) return;
+    const showToast = (text: string, error: boolean) => {
+        setToast({ text, error });
+        setTimeout(() => setToast(null), 3000);
+    };
+
+    const handleAddToCart = (product: Product) => {
+        if (product.stock <= 0) return;
+        const inCart = useStore.getState().cart.find((item) => item.id === product.id)?.quantity ?? 0;
+        if (inCart + 1 > product.stock) {
+            showToast(t('lowStock', { count: product.stock }), true);
+            return;
+        }
         addToCart({
             id: product.id,
             name: product.name,
@@ -61,29 +60,27 @@ export default function ProductsPage() {
             price: product.price,
             quantity: 1,
             image: product.coverImage,
+            stock: product.stock,
         });
 
-        // 显示成功提示
-        setShowSuccessToast(true);
-        setTimeout(() => setShowSuccessToast(false), 3000);
+        showToast(locale === 'en' ? 'Added to cart!' : '已成功添加到购物车', false);
     };
 
     return (
         <div className="bg-white dark:bg-zinc-950">
-            {/* Success Toast */}
+            {/* Add-to-cart feedback */}
             <AnimatePresence>
-                {showSuccessToast && (
+                {toast && (
                     <motion.div
                         initial={{ opacity: 0, y: -50, x: '-50%' }}
                         animate={{ opacity: 1, y: 20, x: '-50%' }}
                         exit={{ opacity: 0, y: -50, x: '-50%' }}
                         transition={{ type: 'spring', damping: 20 }}
-                        className="fixed left-1/2 top-0 z-50 flex items-center gap-3 rounded-full bg-gold-600 px-6 py-3 text-white shadow-lg"
+                        role={toast.error ? 'alert' : 'status'}
+                        className={`fixed left-1/2 top-0 z-50 flex items-center gap-3 rounded-full px-6 py-3 text-white shadow-lg ${toast.error ? 'bg-red-600' : 'bg-gold-600'}`}
                     >
                         <CheckCircle className="h-5 w-5" />
-                        <span className="text-sm font-medium">
-              {locale === 'en' ? 'Added to cart!' : '已成功添加到购物车'}
-            </span>
+                        <span className="text-sm font-medium">{toast.text}</span>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -147,7 +144,7 @@ export default function ProductsPage() {
 
                             return (
                             <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                                <MagicCard className="group overflow-hidden" gradientColor="#f4f4f5">
+                                <MagicCard className="group overflow-hidden" gradientColor="#f9edcf">
                                     <Link href={`/products/${product.id}`} aria-label={displayName}>
                                         <div className="relative h-48 overflow-hidden bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900">
                                             {product.coverImage ? (
@@ -163,7 +160,7 @@ export default function ProductsPage() {
                                             )}
                                             {product.stock <= 3 && product.stock > 0 && (
                                                 <span className="absolute right-2 top-2 rounded-full bg-orange-500 px-2 py-0.5 text-xs font-medium text-white">
-                          仅剩{product.stock}件
+                          {t('lowStock', { count: product.stock })}
                         </span>
                                             )}
                                             {product.stock === 0 && (
@@ -174,17 +171,17 @@ export default function ProductsPage() {
                                         </div>
                                     </Link>
 
-                                    <div className="p-4">
+                                    {/* relative keeps the text above the hover highlight */}
+                                    <div className="relative p-4">
                                         {product.category && <span className="mb-1 block text-xs text-zinc-400">{product.category}</span>}
                                         <Link href={`/products/${product.id}`}>
                                             <h3 className="line-clamp-1 font-semibold text-zinc-900 dark:text-white">{displayName}</h3>
                                         </Link>
-                                        {product.demoOnly && <p className="mt-1 text-xs text-zinc-500">{locale === 'en' ? 'Display sample' : '展示样品'}</p>}
 
                                         <div className="mt-3 flex items-center justify-between">
-                                            <span className="font-bold text-zinc-900 dark:text-white">{formatPrice(product.price)}</span>
+                                            <span className="font-bold text-zinc-900 dark:text-white">{formatPrice(product.price, locale)}</span>
                                             <button
-                                                disabled={product.demoOnly || product.stock <= 0}
+                                                disabled={product.stock <= 0}
                                                 onClick={() => handleAddToCart(product)}
                                                 className="flex items-center gap-1 rounded-full bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white transition-all hover:bg-zinc-700 disabled:opacity-50 dark:bg-white dark:text-zinc-900"
                                             >

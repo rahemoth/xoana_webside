@@ -19,7 +19,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
-    if (form.password !== form.confirmPassword) { setError('两次密码不一致'); return; }
+    if (form.password !== form.confirmPassword) { setError(t('passwordMismatch')); return; }
     setLoading(true);
     setError('');
     try {
@@ -29,7 +29,7 @@ export default function RegisterPage() {
       setAuth(user, token);
       router.push('/');
     } catch (err) {
-      setError(getApiErrorMessage(err, '注册失败，请重试'));
+      setError(getApiErrorMessage(err, t('registerFailed')));
     } finally {
       setLoading(false);
     }
@@ -64,7 +64,7 @@ export default function RegisterPage() {
             ))}
             {error && <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-600 dark:bg-red-900/30 dark:text-red-400">{error}</p>}
             <button type="submit" disabled={loading} className="w-full rounded-xl bg-zinc-900 py-3 font-semibold text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-white dark:text-zinc-900">
-              {loading ? '注册中...' : t('registerBtn')}
+              {loading ? t('registering') : t('registerBtn')}
             </button>
           </form>
           <p className="mt-4 text-center text-sm text-zinc-500">{t('hasAccount')} <Link href="/login" className="font-medium text-violet-600">{t('loginHere')}</Link></p>

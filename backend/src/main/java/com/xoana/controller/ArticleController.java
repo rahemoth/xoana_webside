@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.xoana.dto.ApiResponse;
 import com.xoana.model.Article;
 import com.xoana.repository.ArticleRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import org.springframework.data.domain.Page;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -46,15 +48,21 @@ public class ArticleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Article>> getArticle(@PathVariable Long id) {
-        return articleRepository.findById(id)
+    @Transactional
+    public ResponseEntity<ApiResponse<Article>> getArticle(@PathVariable Long id, HttpServletRequest request) {
+        Article article = articleRepository.findById(id)
                 .filter(Article::isPublished)
-                .map(a -> {
-                    a.setViewCount(a.getViewCount() + 1);
-                    articleRepository.save(a);
-                    return ResponseEntity.ok(ApiResponse.success(a));
-                })
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(null);
+        if (article == null) {
+            return ResponseEntity.notFound().build();
+        }
+        // HEAD only probes the resource; only a real GET counts as a view.
+        if ("HEAD".equalsIgnoreCase(request.getMethod())) {
+            return ResponseEntity.ok(ApiResponse.success(article));
+        }
+        articleRepository.incrementViewCount(id);
+        Article counted = articleRepository.findById(id).orElse(article);
+        return ResponseEntity.ok(ApiResponse.success(counted));
     }
 
     @GetMapping("/admin/all")

@@ -1,6 +1,6 @@
 import axios, { isAxiosError } from 'axios';
 import { useStore, type User } from '@/store';
-import type { ApiResponse, Page, Product, Article, Order, AdminUser, ContactMessage, TrafficStats } from '@/types/models';
+import type { ApiResponse, Page, Product, Article, Order, AdminUser, ContactMessage, MediaAsset, TrafficStats } from '@/types/models';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
@@ -117,6 +117,13 @@ export const uploadApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+};
+
+export const mediaApi = {
+  list: (params?: { page?: number; size?: number }) =>
+      api.get<ApiResponse<Page<MediaAsset>>>('/api/admin/media', { params }),
+  remove: (filename: string) =>
+      api.delete<ApiResponse<void>>(`/api/admin/media/${encodeURIComponent(filename)}`),
 };
 
 export const contactApi = {

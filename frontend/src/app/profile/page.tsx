@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { isAxiosError } from 'axios';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useStore } from '@/store';
 import { useHydrated } from '@/store/useHydrated';
 import { useRouter } from 'next/navigation';
@@ -19,6 +19,8 @@ type ProfileForm = { nickname: string; phone: string; address: string };
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
+  const commonT = useTranslations('common');
+  const locale = useLocale();
   const { user, token, clearAuth, setAuth } = useStore();
   const queryClient = useQueryClient();
   const hydrated = useHydrated();
@@ -40,12 +42,21 @@ export default function ProfilePage() {
   const paymentMutation = useMutation({
     mutationFn: async (order: Order) => {
       const sessionToken = useStore.getState().token;
-      const method = ['WECHAT_PAY', 'ALIPAY', 'PAYPAL'].includes(order.paymentMethod || '') ? order.paymentMethod! : 'ALIPAY';
+      // Historical orders may still carry a retired method; new orders use PayPal.
+      const method = ['WECHAT_PAY', 'ALIPAY', 'PAYPAL'].includes(order.paymentMethod || '') ? order.paymentMethod! : 'PAYPAL';
       const result = await orderApi.processPayment(order.id, method);
       if (useStore.getState().token !== sessionToken) throw new Error(t('sessionChanged'));
       if (result.data?.success !== true || result.data?.data?.status !== 'PAID') throw new Error(t('paymentFailed'));
     },
     onSuccess: (_, order) => {
+      // Paying here the order that a checkout attempt created removes its items from the
+      // cart, so the same goods cannot be checked out and paid for a second time.
+      const store = useStore.getState();
+      const pending = store.pendingOrder;
+      if (user && pending && pending.userId === user.id && pending.id === order.id) {
+        store.consumeOrdered(pending.items);
+        store.clearPendingOrder();
+      }
       setPaymentMessage({ orderId: order.id, userId: user!.id, message: t('paymentSucceeded'), error: false });
       void queryClient.invalidateQueries({ queryKey: ['my-orders'] });
       void queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -90,7 +101,7 @@ export default function ProfilePage() {
       <div className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-950">
         <div className="text-center">
           <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-violet-500 border-t-transparent" />
-          <p className="text-sm text-zinc-400">加载中...</p>
+          <p className="text-sm text-zinc-400">{commonT('loading')}</p>
         </div>
       </div>
     );
@@ -128,12 +139,12 @@ export default function ProfilePage() {
         );
         queryClient.setQueryData(['profile', user.id], res);
         setFormChanges({});
-        setSaveMessage('个人信息已保存。');
+        setSaveMessage(t('profileSaved'));
       } else {
-        throw new Error('保存失败，请重试。');
+        throw new Error(t('saveFailed'));
       }
     } catch (error) {
-      setSaveMessage(isAxiosError<{ message?: string }>(error) ? error.response?.data?.message || '保存失败，请检查网络后重试。' : '保存失败，请重试。');
+      setSaveMessage(isAxiosError<{ message?: string }>(error) ? error.response?.data?.message || t('saveFailedNetwork') : t('saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -161,7 +172,7 @@ export default function ProfilePage() {
 
               {user.role === 'ADMIN' && (
                   <span className="mt-1 inline-block rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-700 dark:bg-violet-900/30 dark:text-violet-400">
-                管理员
+                {t('admin')}
               </span>
               )}
             </div>
@@ -172,7 +183,7 @@ export default function ProfilePage() {
                       onClick={() => router.push('/admin')}
                       className="rounded-xl border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
                   >
-                    进入后台
+                    {t('adminPanel')}
                   </button>
               )}
 
@@ -183,7 +194,7 @@ export default function ProfilePage() {
                   }}
                   className="flex items-center gap-1 rounded-xl border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
               >
-                <LogOut className="h-4 w-4" /> 退出
+                <LogOut className="h-4 w-4" /> {t('logout')}
               </button>
             </div>
           </motion.div>
@@ -212,8 +223,8 @@ export default function ProfilePage() {
           {/* Orders Tab */}
           {tab === 'orders' && (
               <div className="space-y-4">
-                {loadingOrders ? <p role="status" className="py-16 text-center text-zinc-400">正在加载订单...</p> : ordersError ? <p role="alert" className="py-16 text-center text-red-600">订单加载失败。<button onClick={() => { void refetchOrders(); }} className="ml-2 underline">重试</button></p> : orders.length === 0 ? (
-                    <div className="py-16 text-center text-zinc-400">暂无订单</div>
+                {loadingOrders ? <p role="status" className="py-16 text-center text-zinc-400">{t('ordersLoading')}</p> : ordersError ? <p role="alert" className="py-16 text-center text-red-600">{t('ordersFailed')}<button onClick={() => { void refetchOrders(); }} className="ml-2 underline">{commonT('retry')}</button></p> : orders.length === 0 ? (
+                    <div className="py-16 text-center text-zinc-400">{t('noOrders')}</div>
                 ) : (
                     orders.map((order) => (
                         <div
@@ -223,10 +234,10 @@ export default function ProfilePage() {
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="font-medium text-zinc-900 dark:text-white">
-                                订单号: {order.orderNo}
+                                {t('orderNo')}: {order.orderNo}
                               </p>
                               <p className="text-sm text-zinc-400">
-                                {formatDate(order.createdAt)}
+                                {formatDate(order.createdAt, locale)}
                               </p>
                             </div>
 
@@ -239,7 +250,7 @@ export default function ProfilePage() {
                         {t(`orderStatus.${order.status}`)}
                       </span>
                               <p className="font-bold text-zinc-900 dark:text-white">
-                                {formatPrice(order.totalAmount)}
+                                {formatPrice(order.totalAmount, locale)}
                               </p>
                             </div>
                           </div>
@@ -254,7 +265,7 @@ export default function ProfilePage() {
                           <span>
                             {item.productName} × {item.quantity}
                           </span>
-                                      <span>{formatPrice(item.totalPrice)}</span>
+                                      <span>{formatPrice(item.totalPrice, locale)}</span>
                                     </div>
                                 ))}
                               </div>
@@ -300,7 +311,7 @@ export default function ProfilePage() {
                     disabled={saving}
                     className="rounded-xl bg-zinc-900 px-6 py-3 font-semibold text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-white dark:text-zinc-900"
                 >
-                  {saving ? '保存中...' : t('save')}
+                  {saving ? t('saving') : t('save')}
                 </button>
                 {saveMessage && <p role="status" className="text-sm text-zinc-500">{saveMessage}</p>}
               </form>

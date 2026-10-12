@@ -5,21 +5,46 @@ import { galleryImageUrl } from '@/lib/gallery';
 import { useRef, useState } from 'react';
 import { isAxiosError } from 'axios';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useStore, type CartItem } from '@/store';
 import { useHydrated } from '@/store/useHydrated';
-import { orderApi, productApi, settingsApi } from '@/lib/api';
-import { getSampleProductById } from '@/lib/sample-products';
+import { orderApi, settingsApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { formatPrice } from '@/lib/utils';
-import { CheckCircle, CreditCard, Lock } from 'lucide-react';
+import { CheckCircle, CreditCard, Lock, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-type PaymentMethod = 'WECHAT_PAY' | 'ALIPAY' | 'PAYPAL';
+type PaymentMethod = 'PAYPAL';
+
+function createCheckoutToken(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `checkout-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+// Prices are decided by the server; only the charged unit prices and quantities are taken
+// from the created order so the summary matches the amount that will be paid.
+function mergeServerPrices(created: unknown, fallback: CartItem[]): CartItem[] {
+  const items = (created as { items?: unknown } | null)?.items;
+  if (!Array.isArray(items)) return fallback;
+  return fallback.map((item) => {
+    const match = items.find((raw) => (raw as { product?: { id?: unknown } } | null)?.product?.id === item.id) as
+      | { unitPrice?: unknown; quantity?: unknown }
+      | undefined;
+    const price = Number(match?.unitPrice);
+    const quantity = Number(match?.quantity);
+    if (!match || !Number.isFinite(price) || !Number.isInteger(quantity) || quantity <= 0) {
+      return item;
+    }
+    return { ...item, price, quantity };
+  });
+}
 
 export default function CheckoutPage() {
   const t = useTranslations('checkout');
-  const { cart, user, token } = useStore();
+  const locale = useLocale();
+  const { cart, user, token, pendingOrder, setPendingOrder, setCheckoutToken } = useStore();
   const hydrated = useHydrated();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -30,10 +55,11 @@ export default function CheckoutPage() {
     address: user?.address || '',
     ...formChanges,
   };
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('ALIPAY');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('PAYPAL');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [pendingOrder, setPendingOrder] = useState<{ id: number; userId: number; items: CartItem[] } | null>(null);
+  const [priceChanged, setPriceChanged] = useState(false);
+  const [priceNotice, setPriceNotice] = useState('');
   const [error, setError] = useState('');
   const submitting = useRef(false);
   const { data: settings, isPending: loadingSettings, isError: settingsError, refetch } = useQuery({
@@ -41,8 +67,12 @@ export default function CheckoutPage() {
     queryFn: () => settingsApi.get(),
   });
   const checkoutEnabled = settings?.data?.data?.checkoutEnabled === true;
-  const orderId = pendingOrder?.userId === user?.id ? pendingOrder?.id : undefined;
-  const summaryItems = orderId && pendingOrder ? pendingOrder.items : cart;
+  const pendingForUser = pendingOrder && pendingOrder.userId === user?.id ? pendingOrder : null;
+  const orderId = pendingForUser?.id;
+  const summaryItems = pendingForUser ? pendingForUser.items : cart;
+  const summaryTotal = pendingForUser?.totalAmount !== undefined
+      ? pendingForUser.totalAmount
+      : summaryItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,62 +81,73 @@ export default function CheckoutPage() {
       router.push('/login');
       return;
     }
-    if (!form.name.trim() || !form.phone.trim() || !form.address.trim()) {
-      setError('请填写完整的联系人、联系电话和收货地址。');
+    // Contact details are only required while creating the order; a resumed order already
+    // carries them, and its form fields are disabled.
+    if (!orderId && (!form.name.trim() || !form.phone.trim() || !form.address.trim())) {
+      setError(t('contactRequired'));
       return;
     }
     submitting.current = true;
     setLoading(true);
     setError('');
+    setPriceNotice('');
     try {
       const orderedItems = summaryItems.map(item => ({ ...item }));
-      if (!orderId) {
-        // Old persisted carts can still contain samples added by previous versions.
-        const sampleItems = orderedItems.filter(item => getSampleProductById(item.id));
-        for (const item of sampleItems) {
-          try {
-            const product = await productApi.getById(item.id);
-            if (product.data?.success !== true || !product.data?.data?.id) throw new Error('Missing product');
-          } catch {
-            throw new Error(`“${item.name}”是展示样品，暂不支持在线下单。请从购物车移除样品或联系我们购买。`);
-          }
-        }
-      }
-      const orderData = {
-        items: orderedItems.map((item) => ({ productId: item.id, quantity: item.quantity })),
-        shippingAddress: form.address.trim(),
-        contactName: form.name.trim(),
-        contactPhone: form.phone.trim(),
-        paymentMethod,
-      };
       let oid = orderId;
       if (!oid) {
+        // One token per checkout attempt: a retried submission returns the same order
+        // instead of creating a duplicate one.
+        const attemptToken = useStore.getState().checkoutToken ?? createCheckoutToken();
+        setCheckoutToken(attemptToken);
+        const clientTotal = orderedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const orderData = {
+          items: orderedItems.map((item) => ({ productId: item.id, quantity: item.quantity })),
+          shippingAddress: form.address.trim(),
+          contactName: form.name.trim(),
+          contactPhone: form.phone.trim(),
+          paymentMethod,
+          clientToken: attemptToken,
+        };
         const res = await orderApi.create(orderData);
-        const createdId: unknown = res.data?.data?.id;
+        const created = res.data?.data as { id?: unknown; totalAmount?: unknown } | undefined;
+        const createdId = created?.id;
         if (res.data?.success !== true || typeof createdId !== 'number' || !Number.isSafeInteger(createdId) || createdId <= 0) {
-          throw new Error('创建订单失败，请重试。');
+          throw new Error(t('createFailed'));
         }
         oid = createdId;
-        setPendingOrder({ id: oid, userId: user.id, items: orderedItems });
+        setPendingOrder({
+          id: oid,
+          userId: user.id,
+          items: mergeServerPrices(created, orderedItems),
+          totalAmount: Number.isFinite(Number(created?.totalAmount)) ? Number(created?.totalAmount) : undefined,
+        });
+        setCheckoutToken(null);
+        const serverTotal = Number(created?.totalAmount);
+        if (Number.isFinite(serverTotal) && Math.abs(serverTotal - clientTotal) >= 0.01) {
+          // Prices changed between filling the cart and submitting: let the user confirm
+          // the new amount instead of paying it silently.
+          setPriceChanged(true);
+          setPriceNotice(t('priceUpdated', { amount: formatPrice(serverTotal, locale) }));
+          return;
+        }
       }
-      if (useStore.getState().token !== token) throw new Error('登录状态已改变，请重新登录后在个人中心查看此订单。');
+      if (useStore.getState().token !== token) throw new Error(t('sessionChanged'));
       // Payment retries reuse the created order instead of creating duplicates.
       const payment = await orderApi.processPayment(oid, paymentMethod);
       if (payment.data?.success !== true || payment.data?.data?.status !== 'PAID') {
-        throw new Error('支付未完成，请重试支付。');
+        throw new Error(t('paymentIncomplete'));
       }
       const store = useStore.getState();
-      if (store.token !== token) throw new Error('登录状态已改变，请在个人中心查看订单支付结果。');
+      if (store.token !== token) throw new Error(t('sessionChanged'));
       // Keep items added from another tab or after a failed payment.
-      for (const item of orderedItems) {
-        const current = useStore.getState().cart.find(entry => entry.id === item.id);
-        if (current) store.updateQuantity(item.id, current.quantity - item.quantity);
-      }
+      store.consumeOrdered(orderedItems);
+      store.clearPendingOrder();
+      setPriceChanged(false);
       void queryClient.invalidateQueries({ queryKey: ['my-orders'] });
       setSuccess(true);
     } catch (err) {
       const message = isAxiosError<{ message?: string }>(err) ? err.response?.data?.message : undefined;
-      setError(message || (err instanceof Error && !isAxiosError(err) ? err.message : '订单或支付失败，请检查网络后重试。购物车已保留。'));
+      setError(message || (err instanceof Error && !isAxiosError(err) ? err.message : t('orderFailed')));
     } finally {
       submitting.current = false;
       setLoading(false);
@@ -121,21 +162,21 @@ export default function CheckoutPage() {
               <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
                 <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
               </div>
-              <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">订单成功！</h1>
+              <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">{t('orderSuccess')}</h1>
               <p className="mt-2 text-zinc-500">{t('success')}</p>
-              <p className="mt-1 text-sm text-zinc-400">支付方式：{paymentMethod} · 测试模式</p>
+              <p className="mt-1 text-sm text-zinc-400">{t('paidWith', { method: t('paypal') })}</p>
               <div className="mt-8 flex justify-center gap-4">
                 <button
                     onClick={() => router.push('/')}
                     className="rounded-2xl border-2 border-zinc-900 px-6 py-3 font-semibold text-zinc-900 hover:bg-zinc-50 dark:border-white dark:text-white"
                 >
-                  返回首页
+                  {t('backHome')}
                 </button>
                 <button
                     onClick={() => router.push('/profile')}
                     className="rounded-2xl bg-zinc-900 px-6 py-3 font-semibold text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900"
                 >
-                  查看订单
+                  {t('viewOrders')}
                 </button>
               </div>
             </motion.div>
@@ -149,9 +190,14 @@ export default function CheckoutPage() {
         <main className="mx-auto max-w-4xl px-4 pt-24 pb-16 sm:px-6 lg:px-8">
           <h1 className="mb-8 text-3xl font-bold text-zinc-900 dark:text-white">{t('title')}</h1>
 
-          {settingsError && <p role="alert" className="mb-4 text-sm text-red-600">无法读取结账设置。<button type="button" onClick={() => { void refetch(); }} className="ml-2 underline">重试</button></p>}
+          {settingsError && <p role="alert" className="mb-4 text-sm text-red-600">{t('settingsFailed')}<button type="button" onClick={() => { void refetch(); }} className="ml-2 underline">{t('retry')}</button></p>}
           {error && <p role="alert" className="mb-4 text-sm text-red-600">{error}</p>}
-          {orderId && <p role="status" className="mb-4 text-sm text-zinc-500">订单 {orderId} 已创建，以下为原订单商品。可重试支付或在个人中心查看；后来添加的商品会保留在购物车。</p>}
+          {priceNotice && (
+              <p role="alert" className="mb-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                {priceNotice}
+              </p>
+          )}
+          {orderId && <p role="status" className="mb-4 text-sm text-zinc-500">{t('orderCreated', { id: orderId })}</p>}
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <div className="space-y-6">
@@ -194,9 +240,7 @@ export default function CheckoutPage() {
                     {checkoutEnabled ? (
                         <div className="space-y-2">
                           {([
-                            { id: 'WECHAT_PAY', label: t('wechat'), icon: '💚', color: 'border-green-500 bg-green-50 dark:bg-green-900/20' },
-                            { id: 'ALIPAY', label: t('alipay'), icon: '💙', color: 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' },
-                            { id: 'PAYPAL', label: t('paypal'), icon: '💛', color: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' },
+                            { id: 'PAYPAL', label: t('paypal'), Icon: Wallet, color: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' },
                           ] as const).map((method) => (
                               <label
                                   key={method.id}
@@ -213,9 +257,9 @@ export default function CheckoutPage() {
                                     onChange={() => setPaymentMethod(method.id)}
                                     className="hidden"
                                 />
-                                <span className="text-2xl">{method.icon}</span>
+                                <method.Icon className="h-6 w-6 text-zinc-700 dark:text-zinc-200" />
                                 <span className="font-medium text-zinc-900 dark:text-white">{method.label}</span>
-                                <span className="ml-auto text-xs text-zinc-400">（测试模式）</span>
+                                <span className="ml-auto text-xs text-zinc-400">{t('testMode')}</span>
                               </label>
                           ))}
                         </div>
@@ -241,17 +285,17 @@ export default function CheckoutPage() {
                           {item.image && <img src={galleryImageUrl(item.image)} alt={item.name} className="h-full w-full object-cover" />}
                         </div>
                         <div className="flex-1 text-sm">
-                          <p className="font-medium text-zinc-900 dark:text-white">{item.name}</p>
+                          <p className="font-medium text-zinc-900 dark:text-white">{locale === 'en' ? item.nameEn || item.name : item.name}</p>
                           <p className="text-zinc-500">× {item.quantity}</p>
                         </div>
-                        <span className="text-sm font-semibold text-zinc-900 dark:text-white">{formatPrice(item.price * item.quantity)}</span>
+                        <span className="text-sm font-semibold text-zinc-900 dark:text-white">{formatPrice(item.price * item.quantity, locale)}</span>
                       </div>
                   ))}
                 </div>
                 <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-700">
                   <div className="flex justify-between font-bold text-zinc-900 dark:text-white">
-                    <span>总计</span>
-                    <span>{formatPrice(summaryItems.reduce((total, item) => total + item.price * item.quantity, 0))}</span>
+                    <span>{t('total')}</span>
+                    <span>{formatPrice(summaryTotal, locale)}</span>
                   </div>
                 </div>
                 <button
@@ -264,7 +308,7 @@ export default function CheckoutPage() {
                     }`}
                 >
                   <CreditCard className="h-5 w-5" />
-                  {loading || loadingSettings ? t('processing') : orderId ? '重试支付' : checkoutEnabled ? t('placeOrder') : t('contactForPurchase')}
+                  {loading || loadingSettings ? t('processing') : priceChanged ? t('confirmPayment') : orderId ? t('retryPayment') : checkoutEnabled ? t('placeOrder') : t('contactForPurchase')}
                 </button>
                 {!checkoutEnabled && (
                     <p className="mt-2 text-center text-xs text-zinc-400 dark:text-zinc-500">

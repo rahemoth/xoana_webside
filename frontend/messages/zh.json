@@ -16,7 +16,8 @@
       "subtitle": "极致工艺，专注品质",
       "description": "每一块指板都是独立手工打造，融合传统技艺与现代设计",
       "shopNow": "立即选购",
-      "learnMore": "了解更多"
+      "learnMore": "了解更多",
+      "scrollDown": "向下滑动"
     },
     "featured": {
       "title": "推荐产品",
@@ -78,6 +79,12 @@
     "inStock": "有货",
     "noProducts": "暂无产品",
     "loading": "加载中...",
+    "lowStock": "仅剩 {count} 件",
+    "stockCount": "库存：{count} 件",
+    "notFound": "产品未找到",
+    "notFoundHint": "抱歉，您查看的产品不存在或已下架。",
+    "backToList": "返回产品列表",
+    "viewCart": "查看购物车",
     "pagination": {
       "prev": "上一页",
       "next": "下一页"
@@ -89,7 +96,10 @@
     "readMore": "阅读更多",
     "publishedAt": "发布于",
     "views": "阅读量",
-    "noArticles": "暂无文章"
+    "noArticles": "暂无文章",
+    "notFound": "文章未找到",
+    "notFoundHint": "抱歉，您查看的文章不存在或已被删除。",
+    "backToList": "返回文章列表"
   },
   "cart": {
     "title": "购物车",
@@ -100,7 +110,8 @@
     "subtotal": "小计",
     "total": "合计",
     "checkout": "去结算",
-    "itemCount": "件商品"
+    "itemCount": "件商品",
+    "stockLimit": "已达库存上限（{count} 件）"
   },
   "checkout": {
     "title": "结算",
@@ -112,14 +123,29 @@
     "name": "姓名",
     "phone": "手机号",
     "address": "详细地址",
-    "wechat": "微信支付",
-    "alipay": "支付宝",
     "paypal": "PayPal",
     "success": "订单创建成功！",
     "processing": "处理中...",
     "checkoutDisabled": "结账功能已关闭",
     "contactForPurchase": "请联系我们进行购买",
-    "checkoutClosed": "结账通道已关闭"
+    "checkoutClosed": "结账通道已关闭",
+    "total": "总计",
+    "testMode": "（测试模式）",
+    "retryPayment": "重试支付",
+    "confirmPayment": "确认支付",
+    "orderSuccess": "订单成功！",
+    "paidWith": "支付方式：{method} · 测试模式",
+    "backHome": "返回首页",
+    "viewOrders": "查看订单",
+    "orderCreated": "订单 {id} 已创建，以下为该订单商品。可继续支付，或在个人中心查看；之后新加的商品会保留在购物车。",
+    "settingsFailed": "无法读取结账设置。",
+    "retry": "重试",
+    "contactRequired": "请填写完整的联系人、联系电话和收货地址。",
+    "createFailed": "创建订单失败，请重试。",
+    "paymentIncomplete": "支付未完成，请重试支付。",
+    "sessionChanged": "登录状态已改变，请重新登录后在个人中心查看此订单。",
+    "orderFailed": "订单或支付失败，请检查网络后重试。购物车已保留。",
+    "priceUpdated": "商品价格已更新，本单金额为 {amount}。请确认后点击“确认支付”。"
   },
   "auth": {
     "login": "登录",
@@ -135,7 +161,12 @@
     "hasAccount": "已有账号？",
     "loginHere": "立即登录",
     "registerHere": "立即注册",
-    "forgotPassword": "忘记密码？"
+    "forgotPassword": "忘记密码？",
+    "loginFailed": "登录失败，请检查用户名和密码",
+    "loggingIn": "登录中...",
+    "registerFailed": "注册失败，请重试",
+    "registering": "注册中...",
+    "passwordMismatch": "两次密码不一致"
   },
   "profile": {
     "continuePayment": "继续付款",
@@ -152,6 +183,18 @@
     "phone": "手机号",
     "address": "默认地址",
     "save": "保存",
+    "saving": "保存中...",
+    "loading": "加载中...",
+    "profileSaved": "个人信息已保存。",
+    "saveFailed": "保存失败，请重试。",
+    "saveFailedNetwork": "保存失败，请检查网络后重试。",
+    "admin": "管理员",
+    "adminPanel": "进入后台",
+    "logout": "退出",
+    "ordersLoading": "正在加载订单...",
+    "ordersFailed": "订单加载失败。",
+    "noOrders": "暂无订单",
+    "orderNo": "订单号",
     "orderStatus": {
       "PENDING": "待支付",
       "PAID": "已支付",

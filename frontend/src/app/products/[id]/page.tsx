@@ -13,20 +13,20 @@ import { formatPrice } from '@/lib/utils';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
-import { getSampleProductById, type StoreProduct } from '@/lib/sample-products';
+import type { Product } from '@/types/models';
 
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations('products');
+  const commonT = useTranslations('common');
   const { addToCart } = useStore();
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [toast, setToast] = useState<{ text: string; error: boolean } | null>(null);
 
   const id = Number(params.id);
-  const sampleProduct = getSampleProductById(id);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['product', id],
@@ -34,7 +34,7 @@ export default function ProductDetailPage() {
     enabled: Number.isSafeInteger(id) && id > 0,
   });
 
-  const product: StoreProduct | undefined = data?.data?.data || sampleProduct;
+  const product: Product | undefined = data?.data?.data;
 
   // 处理加载状态
   if (isLoading && !product) {
@@ -42,7 +42,7 @@ export default function ProductDetailPage() {
         <div className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-950">
           <div className="text-center">
             <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-violet-500 border-t-transparent" />
-            <p className="text-sm text-zinc-500">加载中...</p>
+            <p className="text-sm text-zinc-500">{commonT('loading')}</p>
           </div>
         </div>
     );
@@ -57,16 +57,16 @@ export default function ProductDetailPage() {
                 onClick={() => router.back()}
                 className="mb-8 flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
             >
-              <ArrowLeft className="h-4 w-4" /> 返回
+              <ArrowLeft className="h-4 w-4" /> {commonT('back')}
             </button>
             <div className="py-16 text-center">
-              <h1 className="mb-4 text-2xl font-bold text-zinc-900 dark:text-white">产品未找到</h1>
-              <p className="text-zinc-500 dark:text-zinc-400">抱歉，您查看的产品不存在或已下架。</p>
+              <h1 className="mb-4 text-2xl font-bold text-zinc-900 dark:text-white">{t('notFound')}</h1>
+              <p className="text-zinc-500 dark:text-zinc-400">{t('notFoundHint')}</p>
               <button
                   onClick={() => router.push('/products')}
                   className="mt-6 rounded-xl bg-zinc-900 px-6 py-3 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900"
               >
-                返回产品列表
+                {t('backToList')}
               </button>
             </div>
           </main>
@@ -81,11 +81,21 @@ export default function ProductDetailPage() {
   const displayMaterial = isEnglish ? (product.materialEn || product.material) : product.material;
   const productImages = [...new Set([product.coverImage, ...(product.images || [])].filter((src): src is string => !!src))];
   const activeProductImage = productImages[activeImage] || productImages[0];
-  const available = !product.demoOnly && product.stock > 0;
+  const available = product.stock > 0;
   const selectedQuantity = Math.max(1, Math.min(quantity, product.stock));
 
-  const handleAddToCart = () => {
-    if (!available) return;
+  const showToast = (text: string, error: boolean) => {
+    setToast({ text, error });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // The cart may already hold some of this product; never let the total exceed stock.
+  const addSelectedToCart = (): boolean => {
+    const inCart = useStore.getState().cart.find((item) => item.id === product.id)?.quantity ?? 0;
+    if (inCart + selectedQuantity > product.stock) {
+      showToast(t('lowStock', { count: product.stock }), true);
+      return false;
+    }
     addToCart({
       id: product.id,
       name: product.name,
@@ -93,42 +103,40 @@ export default function ProductDetailPage() {
       price: product.price,
       quantity: selectedQuantity,
       image: product.coverImage || product.images?.[0],
+      stock: product.stock,
     });
+    return true;
+  };
+
+  const handleAddToCart = () => {
+    if (!available) return;
+    if (!addSelectedToCart()) return;
 
     // 显示成功提示
-    setShowSuccessToast(true);
-    setTimeout(() => setShowSuccessToast(false), 3000);
+    showToast(locale === 'en' ? 'Added to cart!' : '已成功添加到购物车', false);
   };
 
   const handleBuyNow = () => {
     if (!available) return;
-    addToCart({
-      id: product.id,
-      name: product.name,
-      nameEn: product.nameEn,
-      price: product.price,
-      quantity: selectedQuantity,
-      image: product.coverImage || product.images?.[0],
-    });
+    if (!addSelectedToCart()) return;
     router.push('/checkout');
   };
 
   return (
       <div className="bg-white dark:bg-zinc-950">
-        {/* Success Toast */}
+        {/* Add-to-cart feedback */}
         <AnimatePresence>
-          {showSuccessToast && (
+          {toast && (
               <motion.div
                   initial={{ opacity: 0, y: -50, x: '-50%' }}
                   animate={{ opacity: 1, y: 20, x: '-50%' }}
                   exit={{ opacity: 0, y: -50, x: '-50%' }}
                   transition={{ type: 'spring', damping: 20 }}
-                  className="fixed left-1/2 top-0 z-50 flex items-center gap-3 rounded-full bg-gold-600 px-6 py-3 text-white shadow-lg"
+                  role={toast.error ? 'alert' : 'status'}
+                  className={`fixed left-1/2 top-0 z-50 flex items-center gap-3 rounded-full px-6 py-3 text-white shadow-lg ${toast.error ? 'bg-red-600' : 'bg-gold-600'}`}
               >
                 <CheckCircle className="h-5 w-5" />
-                <span className="text-sm font-medium">
-                {locale === 'en' ? 'Added to cart!' : '已成功添加到购物车'}
-              </span>
+                <span className="text-sm font-medium">{toast.text}</span>
               </motion.div>
           )}
         </AnimatePresence>
@@ -138,7 +146,7 @@ export default function ProductDetailPage() {
               onClick={() => router.back()}
               className="mb-8 flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
           >
-            <ArrowLeft className="h-4 w-4" /> 返回
+            <ArrowLeft className="h-4 w-4" /> {commonT('back')}
           </button>
 
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
@@ -184,8 +192,7 @@ export default function ProductDetailPage() {
               )}
 
               <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">{displayName}</h1>
-              {product.demoOnly && <p className="mt-3 text-sm text-zinc-500">{isEnglish ? 'Display sample — contact us for purchase.' : '展示样品，请联系我们购买。'}</p>}
-              <p className="mt-4 text-4xl font-bold text-zinc-900 dark:text-white">{formatPrice(product.price)}</p>
+              <p className="mt-4 text-4xl font-bold text-zinc-900 dark:text-white">{formatPrice(product.price, locale)}</p>
 
               <div className="mt-6 space-y-3">
                 {displayMaterial && (
@@ -206,9 +213,8 @@ export default function ProductDetailPage() {
 
                 <div className="flex items-center gap-3 text-sm">
                   <Tag className="h-4 w-4 text-zinc-400" />
-                  <span className="text-zinc-500 dark:text-zinc-400">库存:</span>
                   <span className={product.stock > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'}>
-                  {product.stock > 0 ? `${product.stock} 件` : t('outOfStock')}
+                  {product.stock > 0 ? t('stockCount', { count: product.stock }) : t('outOfStock')}
                 </span>
                 </div>
               </div>
@@ -264,7 +270,7 @@ export default function ProductDetailPage() {
 
               {/* View cart link */}
               <Link href="/cart" className="mt-3 text-center text-sm text-violet-600 hover:text-violet-700 dark:text-violet-400">
-                查看购物车 →
+                {t('viewCart')} →
               </Link>
             </motion.div>
           </div>

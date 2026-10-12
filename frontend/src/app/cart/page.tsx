@@ -58,19 +58,26 @@ export default function CartPage() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-zinc-900 dark:text-white">{locale === 'en' ? item.nameEn || item.name : item.name}</h3>
-                      <p className="text-sm text-zinc-500">{formatPrice(item.price)}</p>
+                      <p className="text-sm text-zinc-500">{formatPrice(item.price, locale)}</p>
+                      {item.stock !== undefined && item.quantity >= item.stock && (
+                        <p className="mt-1 text-xs text-orange-500">{t('stockLimit', { count: item.stock })}</p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 hover:bg-zinc-100 dark:border-zinc-700">
                         <Minus className="h-3 w-3" />
                       </button>
                       <span className="w-8 text-center text-sm">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 hover:bg-zinc-100 dark:border-zinc-700">
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        disabled={item.stock !== undefined && item.quantity >= item.stock}
+                        className="flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700"
+                      >
                         <Plus className="h-3 w-3" />
                       </button>
                     </div>
                     <span className="w-20 text-right font-semibold text-zinc-900 dark:text-white">
-                      {formatPrice(item.price * item.quantity)}
+                      {formatPrice(item.price * item.quantity, locale)}
                     </span>
                     <button onClick={() => removeFromCart(item.id)} className="text-zinc-400 hover:text-red-500">
                       <Trash2 className="h-4 w-4" />
@@ -88,14 +95,14 @@ export default function CartPage() {
                   {cart.map((item) => (
                     <div key={item.id} className="flex justify-between text-zinc-500">
                       <span>{locale === 'en' ? item.nameEn || item.name : item.name} × {item.quantity}</span>
-                      <span>{formatPrice(item.price * item.quantity)}</span>
+                      <span>{formatPrice(item.price * item.quantity, locale)}</span>
                     </div>
                   ))}
                 </div>
                 <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-700">
                   <div className="flex justify-between font-semibold text-zinc-900 dark:text-white">
                     <span>{t('total')}</span>
-                    <span>{formatPrice(cartTotal())}</span>
+                    <span>{formatPrice(cartTotal(), locale)}</span>
                   </div>
                 </div>
                 <Link

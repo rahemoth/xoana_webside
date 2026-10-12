@@ -3,9 +3,10 @@
 import { useRef, useState } from 'react';
 import Image from 'next/image';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Eye, Plus, Save, Trash2, Upload, X } from 'lucide-react';
+import { Eye, Images, Plus, Save, Trash2, Upload, X } from 'lucide-react';
 import { uploadApi } from '@/lib/api';
 import { GalleryImage, galleryImageUrl } from '@/lib/gallery';
+import { MediaPickerDialog } from '@/components/admin/MediaPickerDialog';
 
 interface GalleryManagerProps {
   images: GalleryImage[];
@@ -24,6 +25,17 @@ export function GalleryManager({ images, onChange, onBusyChange, onSave, saving,
   const [message, setMessage] = useState('');
   const [failures, setFailures] = useState<string[]>([]);
   const [imageUrl, setImageUrl] = useState('');
+  const [showLibrary, setShowLibrary] = useState(false);
+
+  // Picking from the library keeps the dialog open so several images can be added at once.
+  const addFromLibrary = (src: string) => {
+    if (images.some((image) => image.src === src)) {
+      setMessage('该图片已经在图库中。');
+      return;
+    }
+    onChange(current => [...current, { src, alt: 'XOANA Gallery', fit: 'cover' }]);
+    setMessage('已从图片库添加，点击“保存设置”后在首页生效。');
+  };
 
   const uploadFiles = async (files: File[]) => {
     if (!files.length || uploadLock.current) return;
@@ -86,6 +98,9 @@ export function GalleryManager({ images, onChange, onBusyChange, onSave, saving,
           <button type="button" onClick={() => fileInput.current?.click()} className="flex items-center gap-2 rounded-xl border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-700">
             <Upload className="h-4 w-4" />添加图片
           </button>
+          <button type="button" onClick={() => setShowLibrary(true)} className="flex items-center gap-2 rounded-xl border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-700">
+            <Images className="h-4 w-4" />从图片库选择
+          </button>
           <button type="button" onClick={onSave} className="flex items-center gap-2 rounded-xl bg-zinc-900 px-4 py-2 text-sm text-white dark:bg-white dark:text-zinc-900">
             <Save className="h-4 w-4" />{saving ? '保存中...' : saved ? '已保存！' : '保存设置'}
           </button>
@@ -127,8 +142,10 @@ export function GalleryManager({ images, onChange, onBusyChange, onSave, saving,
                 <Dialog.Portal>
                   <Dialog.Overlay className="fixed inset-0 z-50 bg-black/75" />
                   <Dialog.Content aria-describedby={undefined} className="fixed left-1/2 top-1/2 z-50 w-[88vw] max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-5 dark:bg-zinc-900">
-                    <Dialog.Title className="mb-4 pr-10 font-semibold">Gallery 图片 {index + 1}</Dialog.Title>
-                    <div className="relative h-[55vh]"><Image src={galleryImageUrl(image.src)} alt={image.alt} fill sizes="85vw" className="object-contain" /></div>
+                    <Dialog.Title className="mb-4 pr-10 font-semibold">
+                      Gallery 图片 {index + 1}{image.alt.trim() ? ` · ${image.alt}` : ''}
+                    </Dialog.Title>
+                    <div className="relative h-[55vh]"><Image src={galleryImageUrl(image.src)} alt={image.alt || `图片 ${index + 1}`} fill sizes="85vw" className="object-contain" /></div>
                     <Dialog.Close aria-label="关闭预览" className="absolute right-4 top-4 rounded-lg p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"><X className="h-5 w-5" /></Dialog.Close>
                   </Dialog.Content>
                 </Dialog.Portal>
@@ -141,6 +158,21 @@ export function GalleryManager({ images, onChange, onBusyChange, onSave, saving,
                     setMessage('图片已从 Gallery 移除，保存设置后在首页生效。');
                   }} className="flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950"><Trash2 className="h-4 w-4" />删除</button>
                 </div>
+                <label className="block text-sm text-zinc-500">
+                  <span className="mb-1 block">名称</span>
+                  <input
+                    type="text"
+                    aria-label={`图片 ${index + 1} 名称`}
+                    value={image.alt}
+                    maxLength={200}
+                    placeholder="例如：蓝色人物板面"
+                    onChange={event => {
+                      const alt = event.target.value;
+                      onChange(current => current.map((item, currentIndex) => currentIndex === index ? { ...item, alt } : item));
+                    }}
+                    className="w-full rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:border-violet-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
+                  />
+                </label>
                 <label className="flex items-center justify-between gap-2 text-sm text-zinc-500">
                   展示方式
                   <select aria-label={`图片 ${index + 1} 展示方式`} value={image.fit} onChange={event => {
@@ -155,6 +187,15 @@ export function GalleryManager({ images, onChange, onBusyChange, onSave, saving,
           ))}
         </div>
       )}
+
+      <MediaPickerDialog
+        open={showLibrary}
+        title="从图片库添加到产品展示"
+        hint="点击图片即可加入，可连续选择多张；已在图库中的图片不会重复添加。"
+        onClose={() => setShowLibrary(false)}
+        onSelect={addFromLibrary}
+        selectedMany={images.map((image) => image.src)}
+      />
     </div>
   );
 }

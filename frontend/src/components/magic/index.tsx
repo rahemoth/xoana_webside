@@ -53,6 +53,10 @@ export function Particles({
     const value = Math.sin((index + 1) * (seed + 1) * 12.9898) * 43758.5453;
     return value - Math.floor(value);
   };
+  // Framer Motion renders numbers on the server with six significant digits, so the
+  // raw floats would hydrate differently.
+  const percent = (value: number) => Number((value * 100).toPrecision(6));
+  const level = (value: number) => Number(value.toPrecision(6));
 
   return (
       <div className={cn('absolute inset-0 overflow-hidden', className)}>
@@ -60,15 +64,17 @@ export function Particles({
             <motion.div
                 key={i}
                 className="absolute h-1 w-1 rounded-full bg-gold-500/25 dark:bg-gold-300/25"
+                // left/top percentages resolve against the container; a percentage
+                // transform on a 1px dot would only move it a fraction of a pixel.
                 initial={{
-                  x: position(i, 0) * 100 + '%',
-                  y: position(i, 1) * 100 + '%',
-                  opacity: position(i, 2) * 0.5 + 0.2,
+                  left: percent(position(i, 0)) + '%',
+                  top: percent(position(i, 1)) + '%',
+                  opacity: level(position(i, 2) * 0.5 + 0.2),
                 }}
                 animate={{
-                  y: [null, position(i, 3) * 100 + '%'],
-                  x: [null, position(i, 4) * 100 + '%'],
-                  opacity: [position(i, 2) * 0.5 + 0.2, position(i, 5) * 0.5 + 0.2],
+                  top: [null, percent(position(i, 3)) + '%'],
+                  left: [null, percent(position(i, 4)) + '%'],
+                  opacity: [level(position(i, 2) * 0.5 + 0.2), level(position(i, 5) * 0.5 + 0.2)],
                 }}
                 transition={{
                   duration: position(i, 6) * 10 + 10,

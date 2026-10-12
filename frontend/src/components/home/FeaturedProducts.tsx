@@ -18,7 +18,7 @@ import { productApi } from '@/lib/api';
 import { useStore } from '@/store';
 import { MagicCard } from '@/components/magic';
 import { formatPrice } from '@/lib/utils';
-import { SAMPLE_PRODUCTS, type StoreProduct } from '@/lib/sample-products';
+import type { Product } from '@/types/models';
 
 const PRODUCTS_PER_PAGE = 4;
 
@@ -29,19 +29,14 @@ export function FeaturedProducts() {
   const { addToCart } = useStore();
   const [page, setPage] = useState(0);
   const [direction, setDirection] = useState(1);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [toast, setToast] = useState<{ text: string; error: boolean } | null>(null);
 
   const { data } = useQuery({
     queryKey: ['featured-products'],
     queryFn: () => productApi.getFeatured(),
   });
 
-  const serverProducts: StoreProduct[] = data?.data?.data || [];
-  const serverIds = new Set(serverProducts.map((product) => product.id));
-  const displayProducts = [
-    ...SAMPLE_PRODUCTS.filter((product) => !serverIds.has(product.id)),
-    ...serverProducts,
-  ];
+  const displayProducts: Product[] = data?.data?.data || [];
   const pageCount = Math.max(1, Math.ceil(displayProducts.length / PRODUCTS_PER_PAGE));
   const currentPage = Math.min(page, pageCount - 1);
   const currentProducts = displayProducts.slice(
@@ -55,8 +50,18 @@ export function FeaturedProducts() {
     setPage(wrappedPage);
   };
 
-  const handleAddToCart = (product: StoreProduct) => {
-    if (product.demoOnly || product.stock <= 0) return;
+  const showToast = (text: string, error: boolean) => {
+    setToast({ text, error });
+    window.setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleAddToCart = (product: Product) => {
+    if (product.stock <= 0) return;
+    const inCart = useStore.getState().cart.find((item) => item.id === product.id)?.quantity ?? 0;
+    if (inCart + 1 > product.stock) {
+      showToast(pt('lowStock', { count: product.stock }), true);
+      return;
+    }
     addToCart({
       id: product.id,
       name: product.name,
@@ -64,27 +69,26 @@ export function FeaturedProducts() {
       price: product.price,
       quantity: 1,
       image: product.coverImage,
+      stock: product.stock,
     });
 
-    setShowSuccessToast(true);
-    window.setTimeout(() => setShowSuccessToast(false), 3000);
+    showToast(locale === 'en' ? 'Added to cart!' : '已成功添加到购物车', false);
   };
 
   return (
     <section className="overflow-hidden bg-white py-24 dark:bg-zinc-950">
       <AnimatePresence>
-        {showSuccessToast && (
+        {toast && (
           <motion.div
             initial={{ opacity: 0, y: -50, x: '-50%' }}
             animate={{ opacity: 1, y: 20, x: '-50%' }}
             exit={{ opacity: 0, y: -50, x: '-50%' }}
             transition={{ type: 'spring', damping: 20 }}
-            className="fixed left-1/2 top-0 z-50 flex items-center gap-3 rounded-full bg-gold-600 px-6 py-3 text-white shadow-lg"
+            role={toast.error ? 'alert' : 'status'}
+            className={`fixed left-1/2 top-0 z-50 flex items-center gap-3 rounded-full px-6 py-3 text-white shadow-lg ${toast.error ? 'bg-red-600' : 'bg-gold-600'}`}
           >
             <CheckCircle className="h-5 w-5" />
-            <span className="text-sm font-medium">
-              {locale === 'en' ? 'Added to cart!' : '已成功添加到购物车'}
-            </span>
+            <span className="text-sm font-medium">{toast.text}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -161,14 +165,13 @@ export function FeaturedProducts() {
                           {displayName}
                         </h3>
                       </Link>
-                      {product.demoOnly && <p className="mt-1 text-xs text-zinc-500">{locale === 'en' ? 'Display sample' : '展示样品'}</p>}
                       <div className="mt-3 flex items-center justify-between gap-3">
                         <span className="text-lg font-bold text-zinc-900 dark:text-white">
-                          {formatPrice(product.price)}
+                          {formatPrice(product.price, locale)}
                         </span>
                         <button
                           type="button"
-                          disabled={product.demoOnly || product.stock <= 0}
+                          disabled={product.stock <= 0}
                           onClick={() => handleAddToCart(product)}
                           className="flex items-center gap-1.5 rounded-full bg-zinc-900 px-3 py-2 text-xs font-medium text-white transition-all hover:bg-gold-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-zinc-900 dark:hover:bg-gold-300"
                         >

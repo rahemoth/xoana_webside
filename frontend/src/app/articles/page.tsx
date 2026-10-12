@@ -79,7 +79,7 @@ export default function ArticlesPage() {
                   <div className="flex items-center gap-4 text-xs text-zinc-400">
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {formatDate(article.createdAt)}
+                      {formatDate(article.createdAt, locale)}
                     </span>
                     <span className="flex items-center gap-1">
                       <Eye className="h-3 w-3" />

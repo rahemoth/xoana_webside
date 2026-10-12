@@ -28,6 +28,9 @@ public class CreateOrderRequest {
     private Order.PaymentMethod paymentMethod;
     @Size(max = 500)
     private String remark;
+    // Optional idempotency key: repeating a submission with the same token returns the first order.
+    @Size(max = 64)
+    private String clientToken;
 
     @Data
     public static class OrderItemRequest {

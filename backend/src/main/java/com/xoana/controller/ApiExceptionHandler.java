@@ -2,6 +2,8 @@ package com.xoana.controller;
 
 import com.xoana.dto.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -44,5 +46,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiResponse<Void>> oversizedUpload(MaxUploadSizeExceededException exception) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(ApiResponse.error("图片不能超过 10 MB"));
+    }
+
+    // Two requests raced on the same row (unique key or version): the loser gets a conflict,
+    // not an internal server error.
+    @ExceptionHandler({DataIntegrityViolationException.class, OptimisticLockingFailureException.class})
+    public ResponseEntity<ApiResponse<Void>> conflictingWrite(RuntimeException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error("数据已被其他请求修改，请刷新后重试"));
     }
 }

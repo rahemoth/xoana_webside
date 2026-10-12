@@ -1,10 +1,24 @@
-import type { StoreProduct } from '@/lib/sample-products';
 import type { User } from '@/store';
 
-export interface Product extends StoreProduct {
+export interface Product {
+  id: number;
+  name: string;
+  nameEn?: string;
+  price: number;
+  coverImage?: string;
+  images?: string[];
+  category?: string;
+  stock: number;
+  description?: string;
+  descriptionEn?: string;
+  material?: string;
+  materialEn?: string;
+  dimensions?: string;
   featured: boolean;
   active: boolean;
   createdAt: string;
+  // Optimistic-locking version reported by the server.
+  version?: number | null;
 }
 
 export interface Article {
@@ -48,6 +62,14 @@ export interface ContactMessage {
 export interface AdminUser extends User {
   enabled: boolean;
   createdAt: string;
+}
+
+// One file in the admin image library (the backend lists the upload folder).
+export interface MediaAsset {
+  src: string;
+  filename: string;
+  size: number;
+  uploadedAt: string;
 }
 
 export interface ApiResponse<T> {

@@ -5,13 +5,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { productApi, uploadApi } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
-import { Plus, Edit, Trash2, X, Upload, Download, Upload as UploadIcon, ChevronDown, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Upload, Download, Upload as UploadIcon, ChevronDown, Loader2, Images } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProductImagePreview } from '@/components/admin/ProductImagePreview';
+import { MediaPickerDialog } from '@/components/admin/MediaPickerDialog';
 import type { Product } from '@/types/models';
 import { Pagination } from '@/components/ui/pagination';
 import { QueryFeedback } from '@/components/ui/query-feedback';
-import { galleryImageUrl } from '@/lib/gallery';
 
 interface ProductForm {
   name: string;
@@ -26,9 +26,11 @@ interface ProductForm {
   coverImage: string;
   featured: boolean;
   active: boolean;
+  // Row version the form was loaded with; the server rejects a save if it changed meanwhile.
+  version: number | null;
 }
 
-const defaultForm: ProductForm = { name: '', nameEn: '', price: '', stock: '', category: '', description: '', descriptionEn: '', material: '', dimensions: '', coverImage: '', featured: false, active: true };
+const defaultForm: ProductForm = { name: '', nameEn: '', price: '', stock: '', category: '', description: '', descriptionEn: '', material: '', dimensions: '', coverImage: '', featured: false, active: true, version: null };
 
 // 产品分类选项
 const CATEGORIES = [
@@ -41,6 +43,7 @@ const CATEGORIES = [
 export default function AdminProductsPage() {
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<ProductForm>(defaultForm);
   const [uploading, setUploading] = useState(false);
@@ -100,13 +103,14 @@ export default function AdminProductsPage() {
 
   const handleEdit = (product: Product) => {
     setEditId(product.id);
-    setForm({ name: product.name, nameEn: product.nameEn || '', price: String(product.price), stock: String(product.stock), category: product.category || '', description: product.description || '', descriptionEn: product.descriptionEn || '', material: product.material || '', dimensions: product.dimensions || '', coverImage: product.coverImage || '', featured: product.featured, active: product.active });
+    setForm({ name: product.name, nameEn: product.nameEn || '', price: String(product.price), stock: String(product.stock), category: product.category || '', description: product.description || '', descriptionEn: product.descriptionEn || '', material: product.material || '', dimensions: product.dimensions || '', coverImage: product.coverImage || '', featured: product.featured, active: product.active, version: product.version ?? null });
     setShowForm(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createMutation.mutate({ ...form, price: Number(form.price), stock: Number(form.stock) });
+    const { version, ...fields } = form;
+    createMutation.mutate({ ...fields, price: Number(fields.price), stock: Number(fields.stock), ...(editId ? { expectedVersion: version } : {}) });
   };
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,9 +119,10 @@ export default function AdminProductsPage() {
     setUploading(true);
     try {
       const res = await uploadApi.uploadImage(file);
-      const imageUrl = galleryImageUrl(res.data.data);
-
-      setForm(f => ({ ...f, coverImage: imageUrl }));
+      const uploaded = res.data.data;
+      if (typeof uploaded !== 'string' || !uploaded) throw new Error('未返回图片地址');
+      // Keep the server path in the database; it is resolved to the backend host at render time.
+      setForm(f => ({ ...f, coverImage: uploaded }));
     } catch (err) {
       const response = isAxiosError(err) ? err.response : undefined;
       const message = response?.data?.message || response?.data?.error || '上传失败';
@@ -250,7 +255,13 @@ export default function AdminProductsPage() {
           </p>
         )}
         <QueryFeedback pending={isPending} error={isError} retry={() => { void refetch(); }} />
-        {createMutation.isError && <p role="alert" className="mb-4 text-sm text-red-600">保存产品失败，修改仍保留，请重试。</p>}
+        {createMutation.isError && (
+            <p role="alert" className="mb-4 text-sm text-red-600">
+              {isAxiosError<{ message?: string }>(createMutation.error) && createMutation.error.response?.data?.message
+                  ? createMutation.error.response.data.message
+                  : '保存产品失败，修改仍保留，请重试。'}
+            </p>
+        )}
 
         <div className="overflow-x-auto rounded-2xl bg-white shadow-sm dark:bg-zinc-900">
           <table className="w-full min-w-[720px] text-sm">
@@ -409,6 +420,13 @@ export default function AdminProductsPage() {
                           <Upload className="h-4 w-4" /> {uploading ? '上传中...' : '上传'}
                           <input type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
                         </label>
+                        <button
+                          type="button"
+                          onClick={() => setShowLibrary(true)}
+                          className="flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 sm:w-auto"
+                        >
+                          <Images className="h-4 w-4" /> 从图片库选择
+                        </button>
                       </div>
                       <details className="mt-2 text-sm text-zinc-500">
                         <summary className="cursor-pointer">手动设置图片链接</summary>
@@ -436,6 +454,17 @@ export default function AdminProductsPage() {
               </motion.div>
           )}
         </AnimatePresence>
+
+        <MediaPickerDialog
+          open={showLibrary}
+          title="从图片库选择封面图"
+          onClose={() => setShowLibrary(false)}
+          selected={form.coverImage}
+          onSelect={(src) => {
+            setForm(f => ({ ...f, coverImage: src }));
+            setShowLibrary(false);
+          }}
+        />
       </div>
   );
 }

@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -69,6 +70,12 @@ public class Order {
 
     @Column(length = 500)
     private String remark;
+
+    // Client-generated id for one checkout attempt; a retried submission returns this order
+    // instead of creating a second one.
+    @Column(name = "client_token", length = 64, unique = true)
+    @JsonIgnore
+    private String clientToken;
 
     public enum OrderStatus {
         PENDING, PAID, SHIPPED, DELIVERED, CANCELLED, REFUNDED

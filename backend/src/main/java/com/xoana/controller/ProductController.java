@@ -79,6 +79,7 @@ public class ProductController {
     public ResponseEntity<ApiResponse<Product>> createProduct(@Valid @RequestBody Product product) {
         product.setId(null);
         product.setDeletedAt(null);
+        product.setVersion(null);
         LocalDateTime now = LocalDateTime.now();
         product.setCreatedAt(now);
         product.setUpdatedAt(now);
@@ -88,11 +89,16 @@ public class ProductController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Product>> updateProduct(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+        // The edit form sends the version it loaded; a mismatch means the row changed meanwhile.
+        Object expectedVersion = updates.remove("expectedVersion");
         updates.keySet().retainAll(List.of("name", "nameEn", "description", "descriptionEn", "price", "stock",
                 "category", "coverImage", "images", "material", "dimensions", "featured", "active"));
         return productRepository.findById(id)
                 .filter(p -> p.getDeletedAt() == null)
                 .map(p -> {
+                    if (expectedVersion != null && !matchesVersion(p, expectedVersion)) {
+                        return ResponseEntity.status(409).body(ApiResponse.<Product>error("商品已被其他人或订单修改，请刷新后重试"));
+                    }
                     Product candidate = objectMapper.convertValue(p, Product.class);
                     try {
                         objectMapper.updateValue(candidate, updates);
@@ -106,6 +112,13 @@ public class ProductController {
                     return ResponseEntity.ok(ApiResponse.success(productRepository.save(candidate)));
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    private boolean matchesVersion(Product product, Object expectedVersion) {
+        if (!(expectedVersion instanceof Number number) || product.getVersion() == null) {
+            return false;
+        }
+        return product.getVersion().longValue() == number.longValue();
     }
 
     @DeleteMapping("/{id}")

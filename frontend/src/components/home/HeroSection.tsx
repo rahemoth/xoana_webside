@@ -118,7 +118,7 @@ export function HeroSection() {
                     transition={{ duration: 1.8, repeat: Infinity }}
                 >
           <span className="text-xs font-medium tracking-widest">
-            向下滑动
+            {t('scrollDown')}
           </span>
                     <ChevronDown className="h-5 w-5 transition-transform group-hover:translate-y-0.5" />
                 </motion.a>

@@ -8,12 +8,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { adminApi } from '@/lib/api';
 import Link from 'next/link';
-import { LayoutDashboard, Users, Package, FileText, ShoppingBag, BarChart3, Settings, LogOut, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Users, Package, FileText, ShoppingBag, BarChart3, Settings, LogOut, MessageSquare, Images } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
   { href: '/admin', label: '仪表盘', icon: LayoutDashboard },
   { href: '/admin/products', label: '产品管理', icon: Package },
+  { href: '/admin/media', label: '图片库', icon: Images },
   { href: '/admin/articles', label: '文章管理', icon: FileText },
   { href: '/admin/orders', label: '订单管理', icon: ShoppingBag },
   { href: '/admin/users', label: '用户管理', icon: Users },
@@ -54,7 +55,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!hydrated) return;
-    if (session.isError) {
+    // Drop cached admin data only when the session cannot be trusted: an explicit 401/403,
+    // or a failed first check that never produced a verified session.
+    if (session.isError && (!session.data || status === 401 || status === 403)) {
       queryClient.removeQueries({
         predicate: (query) => query.queryKey[0] !== 'admin-session',
       });
@@ -64,7 +67,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     } else if (status === 403) {
       router.replace('/');
     }
-  }, [token, hydrated, status, router, session.isError, queryClient]);
+  }, [token, hydrated, status, router, session.isError, session.data, queryClient]);
 
   useEffect(() => {
     if (!hydrated || !token) return;
@@ -73,11 +76,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => window.removeEventListener('focus', verifyOnFocus);
   }, [hydrated, token, refetch]);
 
-  // A same-session background check hides the page without losing unsaved forms.
-  // New sessions/pages and failed checks never mount the protected subtree.
-  const verified = hydrated && !!token && session.isSuccess;
-  const authorized = verified && session.fetchStatus === 'idle';
-  const verificationFailed = !!token && session.isError && status !== 401 && status !== 403;
+  // A verified session keeps the page usable while a background re-check runs; only a
+  // session without a confirmed server answer blocks the protected subtree.
+  const verified = hydrated && !!token && !!session.data;
+  const verificationFailed = !verified && hydrated && !!token && session.isError
+      && status !== 401 && status !== 403;
+  // A background re-check failed but a verified session is still on screen.
+  const recheckFailed = verified && session.isError;
 
   const verificationNotice = (
         <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
@@ -104,8 +109,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <>
-      {!authorized && verificationNotice}
-      <div inert={!authorized} className={cn('min-h-screen bg-zinc-50 dark:bg-zinc-950', authorized ? 'flex' : 'hidden')}>
+      <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
         {/* Sidebar */}
         <aside className="fixed left-0 top-0 z-40 flex h-full w-64 flex-col bg-white shadow-sm dark:bg-zinc-900">
           <div className="border-b border-zinc-100 p-6 dark:border-zinc-800">
@@ -156,6 +160,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Main */}
         <main className="ml-64 flex-1 overflow-auto p-8">
+          {recheckFailed && (
+            <div role="alert" className="mb-4 flex items-center gap-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+              <span>身份校验暂时失败，此页数据可能不是最新，不影响继续编辑。</span>
+              <button onClick={() => { void refetch(); }} className="underline">重新验证</button>
+            </div>
+          )}
           {children}
         </main>
       </div>

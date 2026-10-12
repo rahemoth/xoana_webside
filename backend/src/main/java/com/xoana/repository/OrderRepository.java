@@ -12,6 +12,7 @@ import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findByUserId(Long userId, Pageable pageable);
+    Optional<Order> findByClientToken(String clientToken);
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Order> findByIdAndUserId(Long id, Long userId);
     @Lock(LockModeType.PESSIMISTIC_WRITE)

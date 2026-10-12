@@ -95,4 +95,8 @@ public class Product {
     @Column(name = "updated_at")
     @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    // Guards admin edits against sales (stock changes) and other admins writing the same row.
+    @Version
+    private Long version;
 }

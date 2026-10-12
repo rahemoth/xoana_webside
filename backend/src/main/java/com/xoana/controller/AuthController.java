@@ -8,6 +8,7 @@ import com.xoana.model.User;
 import com.xoana.repository.UserRepository;
 import com.xoana.security.JwtTokenProvider;
 import jakarta.validation.Valid;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -69,7 +70,12 @@ public class AuthController {
                 .role(User.Role.USER)
                 .enabled(true)
                 .build();
-        userRepository.save(user);
+        try {
+            // Flush inside the try so concurrent duplicate registrations surface here as well.
+            userRepository.saveAndFlush(user);
+        } catch (DataIntegrityViolationException exception) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("用户名或邮箱已被注册"));
+        }
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
         String token = jwtProvider.generateToken(userDetails);
         return ResponseEntity.ok(ApiResponse.success("注册成功", AuthResponse.builder()
