@@ -12,6 +12,7 @@ frontend/out/
 frontend/.env.local
 
 # General
+.m2-repo/
 .DS_Store
 *.pem
 *.log
